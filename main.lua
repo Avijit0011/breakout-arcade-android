@@ -29,14 +29,14 @@ local safetyNetActive = false
 -- Menu Options & Selection Tracking
 local menuIndex = 1
 
-local levelSelectOptions = {
-    "1. Rainbow Arcade",
-    "2. Crystal Pyramid",
-    "3. Retro Invader",
-    "4. Diamond Fortress",
-    "5. Chaos Core",
-    "BACK TO MAIN MENU"
-}
+local function getLevelSelectOptions()
+    local opts = {}
+    for _, name in ipairs(Levels.getLevelNames()) do
+        table.insert(opts, name)
+    end
+    table.insert(opts, "BACK TO MAIN MENU")
+    return opts
+end
 
 local gameOverOptions  = {"PLAY AGAIN", "MAIN MENU", "QUIT GAME"}
 local victoryOptions   = {"NEXT STAGE", "MAIN MENU", "QUIT GAME"}
@@ -130,15 +130,6 @@ end
 local function getPauseMenuOptions()
     local modeTxt = isFullscreen and "DISPLAY: FULLSCREEN" or "DISPLAY: WINDOWED (1080p)"
     return {"RESUME GAME", modeTxt, "MAIN MENU", "QUIT GAME"}
-end
-
-local function getLevelSelectOptions()
-    local opts = {}
-    for _, name in ipairs(Levels.getLevelNames()) do
-        table.insert(opts, name)
-    end
-    table.insert(opts, "BACK TO MAIN MENU")
-    return opts
 end
 
 -- Load High Score from Love2D filesystem
