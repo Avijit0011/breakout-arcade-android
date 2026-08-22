@@ -74,19 +74,19 @@ function UI.drawGlassCard(x, y, width, height, cornerRadius, borderColor)
 end
 
 -- Helper to draw an interactive menu option button
-function UI.drawMenuButton(font, text, y, isSelected, customWidth)
+function UI.drawMenuButton(font, text, y, isSelected, customWidth, customHeight, customX)
     local width = customWidth or 380
-    local height = 50
-    local x = (Constants.VIRTUAL_WIDTH - width) / 2
+    local height = customHeight or 50
+    local x = customX or ((Constants.VIRTUAL_WIDTH - width) / 2)
 
     love.graphics.setFont(font)
 
     if isSelected then
         local pulseScale = 1 + math.sin(titlePulse * 3.5) * 0.025
         love.graphics.push()
-        love.graphics.translate(Constants.VIRTUAL_WIDTH / 2, y + height / 2)
+        love.graphics.translate(x + width / 2, y + height / 2)
         love.graphics.scale(pulseScale, pulseScale)
-        love.graphics.translate(-Constants.VIRTUAL_WIDTH / 2, -(y + height / 2))
+        love.graphics.translate(-(x + width / 2), -(y + height / 2))
 
         -- Active Button Background & Neon Glow
         love.graphics.setColor(0.10, 0.16, 0.32, 0.95)
@@ -103,12 +103,12 @@ function UI.drawMenuButton(font, text, y, isSelected, customWidth)
         love.graphics.rectangle("line", x, y, width, height, 14, 14)
 
         love.graphics.setColor(Constants.COLORS.ACCENT_CYAN)
-        love.graphics.rectangle("fill", x + 10, y + 12, 4, height - 24, 2, 2)
+        love.graphics.rectangle("fill", x + 10, y + 10, 4, height - 20, 2, 2)
 
         local displayText = text
         local textW = font:getWidth(displayText)
         love.graphics.setColor(Constants.COLORS.ACCENT_GOLD)
-        love.graphics.print(displayText, (Constants.VIRTUAL_WIDTH - textW) / 2, y + (height - font:getHeight()) / 2)
+        love.graphics.print(displayText, x + (width - textW) / 2, y + (height - font:getHeight()) / 2)
 
         love.graphics.pop()
     else
@@ -122,7 +122,7 @@ function UI.drawMenuButton(font, text, y, isSelected, customWidth)
 
         local textW = font:getWidth(text)
         love.graphics.setColor(Constants.COLORS.TEXT_MUTED)
-        love.graphics.print(text, (Constants.VIRTUAL_WIDTH - textW) / 2, y + (height - font:getHeight()) / 2)
+        love.graphics.print(text, x + (width - textW) / 2, y + (height - font:getHeight()) / 2)
     end
 end
 

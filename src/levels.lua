@@ -33,9 +33,9 @@ local function createBrickFromSymbol(col, row, sym)
     return Brick.new(x, y, BRICK_WIDTH, BRICK_HEIGHT, 1, "NORMAL")
 end
 
--- Level Definitions
+-- 10 Handcrafted Level Definitions
 local levelMaps = {
-    -- Level 1: Classic Rainbow
+    -- Stage 1: Rainbow Arcade
     {
         name = "1. Rainbow Arcade",
         map = {
@@ -49,7 +49,7 @@ local levelMaps = {
         }
     },
 
-    -- Level 2: The Pyramid
+    -- Stage 2: Crystal Pyramid
     {
         name = "2. Crystal Pyramid",
         map = {
@@ -63,7 +63,7 @@ local levelMaps = {
         }
     },
 
-    -- Level 3: Space Invader
+    -- Stage 3: Retro Invader
     {
         name = "3. Retro Invader",
         map = {
@@ -78,7 +78,7 @@ local levelMaps = {
         }
     },
 
-    -- Level 4: Diamond Fortress
+    -- Stage 4: Diamond Fortress
     {
         name = "4. Diamond Fortress",
         map = {
@@ -93,9 +93,80 @@ local levelMaps = {
         }
     },
 
-    -- Level 5: Chaos Core
+    -- Stage 5: Neon Castle
     {
-        name = "5. Chaos Core",
+        name = "5. Neon Castle",
+        map = {
+            {"S","T","S",0,0,0,7,0,0,0,"S","T","S"},
+            {"S",6,"S",0,6,6,P,6,6,0,"S",6,"S"},
+            {"S",5,"S",5,"T",5,"X",5,"T",5,"S",5,"S"},
+            {4,4,4,4,4,4,4,4,4,4,4,4,4},
+            {3,"P",3,"S",3,"X",3,"X",3,"S",3,"P",3},
+            {2,2,2,2,2,2,2,2,2,2,2,2,2},
+            {"S",1,"S",0,1,1,P,1,1,0,"S",1,"S"},
+        }
+    },
+
+    -- Stage 6: Solar Flare
+    {
+        name = "6. Solar Flare",
+        map = {
+            {0,0,0,0,7,7,"X",7,7,0,0,0,0},
+            {0,0,6,6,6,"T",6,"T",6,6,6,0,0},
+            {0,5,5,"P",5,5,5,5,5,"P",5,5,0},
+            {4,4,4,4,"S",4,"X",4,"S",4,4,4,4},
+            {0,3,3,"P",3,3,3,3,3,"P",3,3,0},
+            {0,0,2,2,2,"T",2,"T",2,2,2,0,0},
+            {0,0,0,0,1,1,"X",1,1,0,0,0,0},
+        }
+    },
+
+    -- Stage 7: Star Destroyer
+    {
+        name = "7. Star Destroyer",
+        map = {
+            {0,0,0,0,0,0,"S",0,0,0,0,0,0},
+            {0,0,0,0,0,7,"T",7,0,0,0,0,0},
+            {0,0,0,0,6,6,"P",6,6,0,0,0,0},
+            {0,0,0,5,5,"S","X","S",5,5,0,0,0},
+            {0,0,4,4,4,4,"T",4,4,4,4,0,0},
+            {0,3,3,3,"P",3,"X",3,"P",3,3,3,0},
+            {2,2,"S",2,2,2,2,2,2,2,"S",2,2},
+            {"S","X","S",0,0,"S","X","S",0,0,"S","X","S"},
+        }
+    },
+
+    -- Stage 8: Double Helix
+    {
+        name = "8. Double Helix",
+        map = {
+            {7,0,0,0,0,0,7,0,0,0,0,0,7},
+            {0,6,0,0,0,6,"P",6,0,0,0,6,0},
+            {0,0,5,0,5,0,5,0,5,0,5,0,0},
+            {0,0,0,"X",0,0,"S",0,0,"X",0,0,0},
+            {0,0,3,0,3,0,3,0,3,0,3,0,0},
+            {0,2,0,0,0,2,"P",2,0,0,0,2,0},
+            {1,0,0,0,0,0,1,0,0,0,0,0,1},
+        }
+    },
+
+    -- Stage 9: Infinity Matrix
+    {
+        name = "9. Infinity Matrix",
+        map = {
+            {0,7,7,7,0,0,0,0,0,7,7,7,0},
+            {7,6,"P",6,7,0,0,0,7,6,"P",6,7},
+            {7,5,5,5,7,0,0,0,7,5,5,5,7},
+            {0,7,"X",7,0,"S","P","S",0,7,"X",7,0},
+            {7,3,3,3,7,0,0,0,7,3,3,3,7},
+            {7,2,"P",2,7,0,0,0,7,2,"P",2,7},
+            {0,1,1,1,0,0,0,0,0,1,1,1,0},
+        }
+    },
+
+    -- Stage 10: Chaos Gauntlet
+    {
+        name = "10. Chaos Gauntlet",
         map = {
             {"S",7,"T",7,"S",7,"X",7,"S",7,"T",7,"S"},
             {6,"T",6,"P",6,"T",6,"T",6,"P",6,"T",6},
@@ -123,6 +194,14 @@ function Levels.loadLevel(levelNum)
     end
 
     return bricks, lvlData.name
+end
+
+function Levels.getLevelNames()
+    local names = {}
+    for _, map in ipairs(levelMaps) do
+        table.insert(names, map.name)
+    end
+    return names
 end
 
 function Levels.getMapCount()

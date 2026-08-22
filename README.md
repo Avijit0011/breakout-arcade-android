@@ -39,12 +39,17 @@ A feature-rich, arcade-quality **Breakout** game built from scratch using the **
   - 🛡️ **Safety Net**: Glowing bottom shield that saves lost balls once.
   - ❤️ **Extra Life**: Restores 1 life heart.
   - 💰 **2x Score Multiplier**: Doubles points scored for 15 seconds.
-- 🗺️ **5 Handcrafted Level Maps**:
-  1. *Rainbow Arcade*
-  2. *Crystal Pyramid*
-  3. *Retro Invader*
-  4. *Diamond Fortress*
-  5. *Chaos Core*
+- 🗺️ **10 Handcrafted Arcade Level Maps**:
+  1. *Rainbow Arcade* (Classic warm-up rainbow tiers)
+  2. *Crystal Pyramid* (TNT core pyramid with Steel anchors)
+  3. *Retro Invader* (Pixel alien sprite with Steel eyes)
+  4. *Diamond Fortress* (Concentric Steel ring fortress)
+  5. *Neon Castle* (Twin battlements with Powerup vaults)
+  6. *Solar Flare* (Circular solar core with TNT flares)
+  7. *Star Destroyer* (Sleek starship wedge with Laser powerups)
+  8. *Double Helix* (Intertwined DNA strands of Tough bricks)
+  9. *Infinity Matrix* (Figure-8 loop with Gold & 2x Multipliers)
+  10. *Chaos Gauntlet* (Dense Steel barriers & explosive TNT clusters)
 - 🕹️ **Dual Controls & Responsive Canvas**: Supports keyboard (Arrow keys / A-D / Space) and mouse controls with automatic letterbox viewport scaling.
 - 🏆 **Persistence & Combo Chains**: Automatic high score saving (`highscore.dat`), display settings saving (`settings.dat`), and combo multiplier chain system.
 
