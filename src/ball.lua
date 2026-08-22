@@ -66,7 +66,10 @@ function Ball:update(dt, paddle)
     if self.trailTimer >= 0.02 then
         self.trailTimer = 0
         local color = (self.fireballTimer > 0) and Constants.COLORS.BALL_FIRE or Constants.COLORS.BALL_NORMAL
-        Particle.spawnTrail(self.x, self.y, self.radius, color)
+        Particle.spawnTrail(self.x, self.y, self.radius * (self.fireballTimer > 0 and 1.25 or 1), color)
+        if self.fireballTimer > 0 then
+            Particle.spawnTrail(self.x + (love.math.random() - 0.5) * 6, self.y + 4, self.radius * 0.7, {1, 0.7, 0.15, 0.5})
+        end
     end
 
     -- Wall Collisions
@@ -162,24 +165,26 @@ end
 function Ball:draw()
     if not self.alive then return end
 
-    love.graphics.push()
-    love.graphics.translate(self.x, self.y)
+    local fire = self.fireballTimer > 0
+    local glowColor = fire and {1, 0.42, 0.08, 1} or {0.85, 0.95, 1, 1}
+    local coreColor = fire and Constants.COLORS.BALL_FIRE or Constants.COLORS.BALL_NORMAL
 
-    -- Glow outline
-    local glowColor = (self.fireballTimer > 0) and {1, 0.4, 0.1, 0.5} or {1, 1, 1, 0.3}
-    love.graphics.setColor(glowColor)
-    love.graphics.circle("fill", 0, 0, self.radius + 4)
+    love.graphics.setBlendMode("add")
+    love.graphics.setColor(glowColor[1], glowColor[2], glowColor[3], fire and 0.28 or 0.16)
+    love.graphics.circle("fill", self.x, self.y, self.radius * 3.2)
+    love.graphics.setColor(glowColor[1], glowColor[2], glowColor[3], fire and 0.55 or 0.32)
+    love.graphics.circle("fill", self.x, self.y, self.radius * 1.85)
+    love.graphics.setBlendMode("alpha")
 
-    -- Core Ball
-    local coreColor = (self.fireballTimer > 0) and Constants.COLORS.BALL_FIRE or Constants.COLORS.BALL_NORMAL
     love.graphics.setColor(coreColor)
-    love.graphics.circle("fill", 0, 0, self.radius)
+    love.graphics.circle("fill", self.x, self.y, self.radius)
 
-    -- Inner specular highlight
-    love.graphics.setColor(1, 1, 1, 0.8)
-    love.graphics.circle("fill", -self.radius * 0.3, -self.radius * 0.3, self.radius * 0.35)
+    love.graphics.setColor(1, 1, 1, 0.9)
+    love.graphics.circle("fill", self.x - self.radius * 0.32, self.y - self.radius * 0.32, self.radius * 0.34)
 
-    love.graphics.pop()
+    love.graphics.setColor(1, 1, 1, 0.35)
+    love.graphics.circle("fill", self.x + self.radius * 0.22, self.y + self.radius * 0.18, self.radius * 0.16)
+
     love.graphics.setColor(1, 1, 1, 1)
 end
 

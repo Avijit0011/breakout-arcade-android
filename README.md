@@ -60,9 +60,21 @@ breakout/
 
 ---
 
-## 🚀 How to Run
+## 🚀 How to Run & Build `.exe`
 
-### Windows (1-Click Launchers)
+### 1. Standalone Executable (.exe)
+You can launch the compiled game directly by running:
+- **Executable**: `dist/BreakoutArcade/BreakoutArcade.exe`
+- **ZIP Release**: `dist/BreakoutArcade-Windows.zip` (shareable standalone zip)
+
+### 2. Rebuilding the `.exe`
+If you make modifications to the source code and want to rebuild the `.exe` package, run:
+```powershell
+.\build.ps1
+```
+or double-click `build.bat` in File Explorer.
+
+### 3. Windows 1-Click Launchers (Development Mode)
 Run either script in your terminal or double-click in File Explorer:
 ```powershell
 .\run.ps1
@@ -72,8 +84,8 @@ or
 .\run.bat
 ```
 
-### Standard LÖVE 2D CLI
-If you have [LÖVE](https://love2d.org/) installed globally on your machine:
+### 4. Standard LÖVE 2D CLI
+If you have [LÖVE](https://love2d.org/) installed globally:
 ```bash
 love .
 ```
@@ -87,6 +99,8 @@ love .
 | **Move Paddle** | Left / Right Arrows or `A` / `D` | Move Cursor |
 | **Launch Ball / Fire Lasers** | `Spacebar` or `Enter` | Left Click |
 | **Pause Game** | `P` or `Escape` | — |
+| **Toggle Soothing Music** | `M` | Mute / Unmute Music |
+| **Toggle Fullscreen / Window** | `F11` or `Alt + Enter` | Click Display Button in Menu |
 | **Menu Navigation** | Up / Down Arrows or `W` / `S` | Move Cursor |
 | **Confirm Menu Choice** | `Enter` or `Spacebar` | Left Click |
 | **Quit Game** | `Escape` in menus or select `Quit` | Click Quit Button |

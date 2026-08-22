@@ -163,48 +163,56 @@ end
 
 function Paddle:draw()
     love.graphics.push()
-    -- Pivot around center of paddle for squish animation
     local cx = self.x + self.width / 2
     local cy = self.y + self.height / 2
     love.graphics.translate(cx, cy)
     love.graphics.scale(self.scaleX, self.scaleY)
     love.graphics.translate(-cx, -cy)
 
-    -- Glow outline
-    love.graphics.setColor(Constants.COLORS.PADDLE_GLOW)
-    love.graphics.rectangle("fill", self.x - 4, self.y - 4, self.width + 8, self.height + 8, 12, 12)
+    local body = (self.laserTimer > 0) and Constants.COLORS.PADDLE_LASER or Constants.COLORS.PADDLE_BASE
 
-    -- Main Paddle Body
+    love.graphics.setBlendMode("add")
+    love.graphics.setColor(body[1], body[2], body[3], 0.22)
+    love.graphics.rectangle("fill", self.x - 10, self.y - 8, self.width + 20, self.height + 16, 14, 14)
+    love.graphics.setColor(body[1], body[2], body[3], 0.18)
+    love.graphics.ellipse("fill", cx, self.y + 4, self.width * 0.55, 16)
+    love.graphics.setBlendMode("alpha")
+
+    love.graphics.setColor(body[1] * 0.35, body[2] * 0.35, body[3] * 0.45, 1)
+    love.graphics.rectangle("fill", self.x, self.y, self.width, self.height, 9, 9)
+
+    love.graphics.setColor(body)
+    love.graphics.rectangle("fill", self.x + 2, self.y + 1, self.width - 4, self.height * 0.62, 8, 8)
+
+    love.graphics.setColor(1, 1, 1, 0.55)
+    love.graphics.rectangle("fill", self.x + 10, self.y + 3, self.width - 20, 4, 3, 3)
+
+    -- End caps
+    love.graphics.setColor(1, 1, 1, 0.85)
+    love.graphics.circle("fill", self.x + 8, cy, 4)
+    love.graphics.circle("fill", self.x + self.width - 8, cy, 4)
+
     if self.laserTimer > 0 then
-        love.graphics.setColor(Constants.COLORS.PADDLE_LASER)
-    else
-        love.graphics.setColor(Constants.COLORS.PADDLE_BASE)
-    end
-    love.graphics.rectangle("fill", self.x, self.y, self.width, self.height, 8, 8)
-
-    -- Top Highlight Strip
-    love.graphics.setColor(1, 1, 1, 0.4)
-    love.graphics.rectangle("fill", self.x + 4, self.y + 2, self.width - 8, 4, 4, 4)
-
-    -- Draw Laser Cannons if Laser Powerup Active
-    if self.laserTimer > 0 then
-        love.graphics.setColor(1, 0.2, 0.3, 1)
-        love.graphics.rectangle("fill", self.x + 4, self.y - 8, 8, 10, 3, 3)
-        love.graphics.rectangle("fill", self.x + self.width - 12, self.y - 8, 8, 10, 3, 3)
-
-        -- Energy tip glow
-        love.graphics.setColor(1, 0.9, 0.2, 0.9)
-        love.graphics.circle("fill", self.x + 8, self.y - 8, 3)
-        love.graphics.circle("fill", self.x + self.width - 8, self.y - 8, 3)
+        love.graphics.setColor(1, 0.18, 0.32, 1)
+        love.graphics.rectangle("fill", self.x + 4, self.y - 10, 8, 12, 3, 3)
+        love.graphics.rectangle("fill", self.x + self.width - 12, self.y - 10, 8, 12, 3, 3)
+        love.graphics.setBlendMode("add")
+        love.graphics.setColor(1, 0.85, 0.25, 0.9)
+        love.graphics.circle("fill", self.x + 8, self.y - 10, 4)
+        love.graphics.circle("fill", self.x + self.width - 8, self.y - 10, 4)
+        love.graphics.setBlendMode("alpha")
     end
 
     love.graphics.pop()
 
-    -- Draw Active Lasers
-    love.graphics.setColor(Constants.COLORS.PADDLE_LASER)
+    love.graphics.setBlendMode("add")
     for _, l in ipairs(self.lasers) do
+        love.graphics.setColor(1, 0.25, 0.4, 0.35)
+        love.graphics.rectangle("fill", l.x - 3, l.y - 6, l.width + 6, l.height + 12, 3, 3)
+        love.graphics.setColor(1, 0.85, 0.45, 0.95)
         love.graphics.rectangle("fill", l.x, l.y, l.width, l.height, 2, 2)
     end
+    love.graphics.setBlendMode("alpha")
 
     love.graphics.setColor(1, 1, 1, 1)
 end

@@ -2,6 +2,8 @@ local Sounds = {}
 
 local sources = {}
 local sampleRate = 44100
+local bgmSource = nil
+local musicEnabled = true
 
 -- Helper function to generate SoundData and Source
 local function createSound(duration, generateFunc)
@@ -21,7 +23,89 @@ local function createSound(duration, generateFunc)
     return source
 end
 
+-- Procedurally synthesize a soothing ambient background music track (16s seamless chord loop)
+local function createBGM(duration)
+    local sampleCount = math.floor(sampleRate * duration)
+    local soundData = love.sound.newSoundData(sampleCount, sampleRate, 16, 1)
+
+    local bars = {
+        { bass = 65.41,  pad = {130.81, 164.81, 196.00, 246.94} }, -- Cmaj7
+        { bass = 55.00,  pad = {110.00, 130.81, 164.81, 196.00, 246.94} }, -- Am9
+        { bass = 43.65,  pad = {87.31,  110.00, 130.81, 164.81} }, -- Fmaj7
+        { bass = 49.00,  pad = {98.00,  123.47, 146.83, 164.81} }  -- G6
+    }
+
+    local arpNotes = {
+        523.25, 659.25, 783.99, 987.77, 1046.50, 783.99, 659.25, 523.25,
+        440.00, 523.25, 659.25, 783.99, 987.77,  783.99, 659.25, 523.25,
+        349.23, 440.00, 523.25, 659.25, 783.99,  659.25, 523.25, 440.00,
+        392.00, 493.88, 587.33, 659.25, 783.99,  659.25, 493.88, 392.00
+    }
+
+    local barDuration = duration / 4
+    local arpNoteDuration = duration / #arpNotes
+
+    for i = 0, sampleCount - 1 do
+        local t = i / sampleRate
+
+        local barFloat = (t / barDuration) % 4
+        local barIndex1 = math.floor(barFloat) + 1
+        local barIndex2 = (barIndex1 % 4) + 1
+        local barPos = barFloat - math.floor(barFloat)
+
+        local fadeWidth = 0.25
+        local w1, w2 = 1, 0
+        if barPos > (1 - fadeWidth) then
+            local blend = (barPos - (1 - fadeWidth)) / fadeWidth
+            w2 = blend * blend * (3 - 2 * blend)
+            w1 = 1 - w2
+        end
+
+        local b1 = bars[barIndex1]
+        local b2 = bars[barIndex2]
+
+        -- Sub Bass
+        local bassSample = (math.sin(2 * math.pi * b1.bass * t) * w1 + math.sin(2 * math.pi * b2.bass * t) * w2) * 0.26
+
+        -- Warm Synth Pad
+        local padSample1 = 0
+        for _, f in ipairs(b1.pad) do
+            padSample1 = padSample1 + math.sin(2 * math.pi * f * t) + 0.5 * math.sin(2 * math.pi * (f * 1.003) * t)
+        end
+        padSample1 = padSample1 / (#b1.pad * 1.5)
+
+        local padSample2 = 0
+        for _, f in ipairs(b2.pad) do
+            padSample2 = padSample2 + math.sin(2 * math.pi * f * t) + 0.5 * math.sin(2 * math.pi * (f * 1.003) * t)
+        end
+        padSample2 = padSample2 / (#b2.pad * 1.5)
+
+        local padSample = (padSample1 * w1 + padSample2 * w2) * 0.32
+
+        -- Ambient Arpeggio
+        local arpIndex = math.floor((t / arpNoteDuration) % #arpNotes) + 1
+        local arpT = (t % arpNoteDuration)
+        local arpFreq = arpNotes[arpIndex]
+        local arpEnv = math.exp(-arpT * 4.5) * (1 - math.exp(-arpT * 80))
+        local arpSample = math.sin(2 * math.pi * arpFreq * t) * arpEnv * 0.16
+
+        local sample = bassSample + padSample + arpSample
+        if sample > 1 then sample = 1 end
+        if sample < -1 then sample = -1 end
+
+        soundData:setSample(i, sample)
+    end
+
+    local source = love.audio.newSource(soundData, "static")
+    source:setLooping(true)
+    source:setVolume(0.30)
+    return source
+end
+
 function Sounds.init()
+    -- Synthesize BGM
+    bgmSource = createBGM(16.0)
+
     -- 1. Paddle Bounce: short rising sine wave
     sources["paddle_hit"] = createSound(0.08, function(t, dur)
         local freq = 250 + (t / dur) * 200
@@ -124,6 +208,41 @@ function Sounds.play(name)
         local src = sources[name]:clone()
         src:setVolume(0.7)
         src:play()
+    end
+end
+
+function Sounds.playBGM()
+    if musicEnabled and bgmSource and not bgmSource:isPlaying() then
+        bgmSource:play()
+    end
+end
+
+function Sounds.stopBGM()
+    if bgmSource then
+        bgmSource:stop()
+    end
+end
+
+function Sounds.toggleMusic()
+    musicEnabled = not musicEnabled
+    if musicEnabled then
+        Sounds.playBGM()
+    else
+        Sounds.stopBGM()
+    end
+    return musicEnabled
+end
+
+function Sounds.isMusicEnabled()
+    return musicEnabled
+end
+
+function Sounds.setMusicEnabled(enabled)
+    musicEnabled = enabled
+    if musicEnabled then
+        Sounds.playBGM()
+    else
+        Sounds.stopBGM()
     end
 end
 

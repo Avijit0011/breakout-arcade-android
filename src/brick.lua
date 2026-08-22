@@ -101,30 +101,45 @@ function Brick:draw()
     if not self.alive then return end
 
     local color = self:getColor()
-    if self.flashTimer > 0 then
-        love.graphics.setColor(1, 1, 1, 1) -- Flash white on impact
+    local flashing = self.flashTimer > 0
+    local pulse = 0.55 + math.sin(love.timer.getTime() * 4 + self.x * 0.02) * 0.45
+
+    -- Soft color bloom
+    love.graphics.setBlendMode("add")
+    if flashing then
+        love.graphics.setColor(1, 1, 1, 0.45)
     else
-        love.graphics.setColor(color)
+        love.graphics.setColor(color[1], color[2], color[3], 0.18)
+    end
+    love.graphics.rectangle("fill", self.x - 3, self.y - 3, self.width + 6, self.height + 6, 6, 6)
+    love.graphics.setBlendMode("alpha")
+
+    -- Body
+    if flashing then
+        love.graphics.setColor(1, 1, 1, 1)
+    else
+        love.graphics.setColor(color[1] * 0.55, color[2] * 0.55, color[3] * 0.55, 1)
+    end
+    love.graphics.rectangle("fill", self.x, self.y, self.width, self.height, 5, 5)
+
+    -- Upper gradient sheen
+    if not flashing then
+        love.graphics.setColor(color[1], color[2], color[3], 1)
+        love.graphics.rectangle("fill", self.x + 1, self.y + 1, self.width - 2, self.height * 0.55, 4, 4)
     end
 
-    -- Draw Main Brick Box with rounded corners
-    love.graphics.rectangle("fill", self.x, self.y, self.width, self.height, 4, 4)
+    -- Specular
+    love.graphics.setColor(1, 1, 1, flashing and 0.9 or 0.28)
+    love.graphics.rectangle("fill", self.x + 4, self.y + 3, self.width - 8, 3, 2, 2)
 
-    -- Top/Left Highlight
-    love.graphics.setColor(1, 1, 1, 0.25)
-    love.graphics.rectangle("fill", self.x + 2, self.y + 2, self.width - 4, 3, 2, 2)
-    love.graphics.rectangle("fill", self.x + 2, self.y + 2, 3, self.height - 4, 2, 2)
+    -- Neon edge
+    love.graphics.setColor(color[1], color[2], color[3], 0.85)
+    love.graphics.setLineWidth(1.4)
+    love.graphics.rectangle("line", self.x + 0.5, self.y + 0.5, self.width - 1, self.height - 1, 5, 5)
 
-    -- Bottom/Right Bevel Line
-    love.graphics.setColor(0, 0, 0, 0.35)
-    love.graphics.setLineWidth(2)
-    love.graphics.rectangle("line", self.x, self.y, self.width, self.height, 4, 4)
-
-    -- Draw overlays for special types & cracks for tough bricks
     if self.type == "TOUGH" and self.hitsLeft < self.maxHits then
-        love.graphics.setColor(0, 0, 0, 0.7)
+        love.graphics.setColor(0.05, 0.02, 0.08, 0.75)
         love.graphics.setLineWidth(2)
-        -- Procedural Crack Lines based on hits left
         if self.hitsLeft == 2 then
             love.graphics.line(self.x + 6, self.y + 4, self.x + self.width * 0.4, self.y + self.height * 0.6)
         elseif self.hitsLeft == 1 then
@@ -133,16 +148,22 @@ function Brick:draw()
             love.graphics.line(self.x + self.width * 0.6, self.y + 4, self.x + self.width * 0.3, self.y + self.height - 4)
         end
     elseif self.type == "TNT" then
-        love.graphics.setColor(1, 1, 1, 0.9)
-        love.graphics.setLineWidth(2)
+        love.graphics.setColor(1, 0.92, 0.2, 0.25 + pulse * 0.35)
+        love.graphics.rectangle("fill", self.x + 2, self.y + 2, self.width - 4, self.height - 4, 3, 3)
+        love.graphics.setColor(1, 1, 1, 0.95)
         local font = love.graphics.getFont()
         local txt = "TNT"
         love.graphics.print(txt, self.x + (self.width - font:getWidth(txt)) / 2, self.y + (self.height - font:getHeight()) / 2)
     elseif self.type == "STEEL" then
-        love.graphics.setColor(0.9, 0.95, 1.0, 0.4)
-        love.graphics.line(self.x + 4, self.y + self.height - 4, self.x + self.width - 4, self.y + 4)
+        love.graphics.setColor(0.85, 0.92, 1.0, 0.22)
+        for i = 1, 3 do
+            local ly = self.y + 5 + (i - 1) * (self.height / 4)
+            love.graphics.line(self.x + 6, ly, self.x + self.width - 6, ly)
+        end
+        love.graphics.setColor(0.95, 0.98, 1.0, 0.45)
+        love.graphics.line(self.x + 5, self.y + self.height - 5, self.x + self.width - 5, self.y + 5)
     elseif self.type == "POWERUP" then
-        love.graphics.setColor(1, 1, 1, 0.95)
+        love.graphics.setColor(1, 1, 1, 0.55 + pulse * 0.4)
         local font = love.graphics.getFont()
         local txt = "★"
         love.graphics.print(txt, self.x + (self.width - font:getWidth(txt)) / 2, self.y + (self.height - font:getHeight()) / 2)

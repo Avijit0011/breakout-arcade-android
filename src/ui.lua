@@ -1,16 +1,36 @@
 local Constants = require("src.constants")
+local Visuals = require("src.visuals")
 
 local UI = {}
 
 local fonts = {}
 local titlePulse = 0
 
+local function trySystemFont(names, size)
+    for _, name in ipairs(names) do
+        local path = "C:/Windows/Fonts/" .. name
+        local file = io.open(path, "rb")
+        if file then
+            local data = file:read("*all")
+            file:close()
+            local ok, font = pcall(function()
+                return love.graphics.newFont(love.filesystem.newFileData(data, name), size)
+            end)
+            if ok and font then
+                return font
+            end
+        end
+    end
+    return love.graphics.newFont(size)
+end
+
 function UI.init()
-    fonts.small  = love.graphics.newFont(15)
-    fonts.medium = love.graphics.newFont(20)
-    fonts.large  = love.graphics.newFont(32)
-    fonts.title  = love.graphics.newFont(54)
-    fonts.badge  = love.graphics.newFont(14)
+    fonts.small  = trySystemFont({"segoeui.ttf", "SegoeUI.ttf"}, 15)
+    fonts.medium = trySystemFont({"segoeui.ttf", "SegoeUI.ttf"}, 20)
+    fonts.large  = trySystemFont({"bahnschrift.ttf", "segoeui.ttf"}, 34)
+    fonts.title  = trySystemFont({"bahnschrift.ttf", "seguisb.ttf", "segoeui.ttf"}, 58)
+    fonts.badge  = trySystemFont({"consola.ttf", "segoeui.ttf"}, 13)
+    fonts.score  = trySystemFont({"consola.ttf", "bahnschrift.ttf", "segoeui.ttf"}, 20)
 end
 
 function UI.update(dt)
@@ -34,18 +54,22 @@ end
 
 -- Draw a Glassmorphic Card Container
 function UI.drawGlassCard(x, y, width, height, cornerRadius, borderColor)
-    cornerRadius = cornerRadius or 12
-    -- Dark translucent card background
-    love.graphics.setColor(0.06, 0.05, 0.14, 0.85)
+    cornerRadius = cornerRadius or 14
+    love.graphics.setColor(0.04, 0.04, 0.10, 0.78)
     love.graphics.rectangle("fill", x, y, width, height, cornerRadius, cornerRadius)
 
-    -- Top inner specular highlight
-    love.graphics.setColor(1, 1, 1, 0.08)
-    love.graphics.rectangle("fill", x + 3, y + 3, width - 6, math.min(18, height / 3), cornerRadius - 2, cornerRadius - 2)
+    love.graphics.setColor(1, 1, 1, 0.06)
+    love.graphics.rectangle("fill", x + 4, y + 4, width - 8, math.min(22, height / 3.2), cornerRadius - 3, cornerRadius - 3)
 
-    -- Glowing border line
-    love.graphics.setColor(borderColor or Constants.COLORS.ACCENT_CYAN)
-    love.graphics.setLineWidth(2)
+    local bc = borderColor or Constants.COLORS.ACCENT_CYAN
+    love.graphics.setBlendMode("add")
+    love.graphics.setColor(bc[1], bc[2], bc[3], 0.16)
+    love.graphics.setLineWidth(6)
+    love.graphics.rectangle("line", x - 1, y - 1, width + 2, height + 2, cornerRadius + 1, cornerRadius + 1)
+    love.graphics.setBlendMode("alpha")
+
+    love.graphics.setColor(bc[1], bc[2], bc[3], bc[4] or 0.85)
+    love.graphics.setLineWidth(1.8)
     love.graphics.rectangle("line", x, y, width, height, cornerRadius, cornerRadius)
 end
 
@@ -65,20 +89,23 @@ function UI.drawMenuButton(font, text, y, isSelected, customWidth)
         love.graphics.translate(-Constants.VIRTUAL_WIDTH / 2, -(y + height / 2))
 
         -- Active Button Background & Neon Glow
-        love.graphics.setColor(0.12, 0.10, 0.26, 0.95)
-        love.graphics.rectangle("fill", x, y, width, height, 12, 12)
+        love.graphics.setColor(0.10, 0.16, 0.32, 0.95)
+        love.graphics.rectangle("fill", x, y, width, height, 14, 14)
 
-        -- Outer neon glow line
-        love.graphics.setColor(0.00, 0.90, 1.00, 0.3)
-        love.graphics.setLineWidth(6)
-        love.graphics.rectangle("line", x - 2, y - 2, width + 4, height + 4, 14, 14)
+        love.graphics.setBlendMode("add")
+        love.graphics.setColor(0.15, 0.75, 1.00, 0.18)
+        love.graphics.setLineWidth(8)
+        love.graphics.rectangle("line", x - 1, y - 1, width + 2, height + 2, 15, 15)
+        love.graphics.setBlendMode("alpha")
 
         love.graphics.setColor(Constants.COLORS.ACCENT_CYAN)
-        love.graphics.setLineWidth(2.5)
-        love.graphics.rectangle("line", x, y, width, height, 12, 12)
+        love.graphics.setLineWidth(2)
+        love.graphics.rectangle("line", x, y, width, height, 14, 14)
 
-        -- Button Text
-        local displayText = "▶   " .. text .. "   ◀"
+        love.graphics.setColor(Constants.COLORS.ACCENT_CYAN)
+        love.graphics.rectangle("fill", x + 10, y + 12, 4, height - 24, 2, 2)
+
+        local displayText = text
         local textW = font:getWidth(displayText)
         love.graphics.setColor(Constants.COLORS.ACCENT_GOLD)
         love.graphics.print(displayText, (Constants.VIRTUAL_WIDTH - textW) / 2, y + (height - font:getHeight()) / 2)
@@ -86,12 +113,12 @@ function UI.drawMenuButton(font, text, y, isSelected, customWidth)
         love.graphics.pop()
     else
         -- Unselected Button
-        love.graphics.setColor(0.06, 0.05, 0.12, 0.70)
-        love.graphics.rectangle("fill", x, y, width, height, 12, 12)
+        love.graphics.setColor(0.05, 0.05, 0.10, 0.55)
+        love.graphics.rectangle("fill", x, y, width, height, 14, 14)
 
-        love.graphics.setColor(0.25, 0.25, 0.38, 0.5)
-        love.graphics.setLineWidth(1.5)
-        love.graphics.rectangle("line", x, y, width, height, 12, 12)
+        love.graphics.setColor(0.42, 0.48, 0.68, 0.28)
+        love.graphics.setLineWidth(1.4)
+        love.graphics.rectangle("line", x, y, width, height, 14, 14)
 
         local textW = font:getWidth(text)
         love.graphics.setColor(Constants.COLORS.TEXT_MUTED)
@@ -102,28 +129,29 @@ end
 -- Draw HUD Header
 function UI.drawHUD(score, highScore, lives, levelName, combo, multiplier, safetyNetActive, activePowerups)
     -- Top HUD Glass Header Bar
-    UI.drawGlassCard(15, 8, Constants.VIRTUAL_WIDTH - 30, 44, 10, {0.15, 0.75, 0.95, 0.4})
+    UI.drawGlassCard(18, 8, Constants.VIRTUAL_WIDTH - 36, 44, 16, {0.25, 0.85, 1.0, 0.35})
+
+    love.graphics.setFont(fonts.score)
+
+    Visuals.pill(32, 16, 178, 28, {0.12, 0.09, 0.04, 0.55}, {1.00, 0.82, 0.28, 0.45})
+    love.graphics.setColor(Constants.COLORS.ACCENT_GOLD)
+    love.graphics.print(string.format("SCORE  %06d", score), 46, 20)
+
+    Visuals.pill(222, 16, 168, 28, {0.06, 0.07, 0.14, 0.55}, {0.55, 0.62, 0.85, 0.30})
+    love.graphics.setColor(Constants.COLORS.TEXT_MUTED)
+    love.graphics.print(string.format("BEST  %06d", highScore), 236, 20)
 
     love.graphics.setFont(fonts.medium)
-
-    -- Score Pill Widget
-    love.graphics.setColor(Constants.COLORS.ACCENT_GOLD)
-    love.graphics.print(string.format("SCORE: %06d", score), 35, 18)
-
-    -- High Score Pill Widget
-    love.graphics.setColor(Constants.COLORS.TEXT_MUTED)
-    love.graphics.print(string.format("HIGH: %06d", highScore), 330, 18)
-
-    -- Stage Title Badge
     love.graphics.setColor(Constants.COLORS.TEXT_MAIN)
     local stageText = levelName or "Stage 1"
-    love.graphics.print(stageText, 620 - fonts.medium:getWidth(stageText) / 2, 18)
+    love.graphics.print(stageText, 640 - fonts.medium:getWidth(stageText) / 2, 18)
 
-    -- Combo & Multiplier Badge
     if combo > 1 or multiplier > 1 then
-        local multiText = string.format("⚡ COMBO x%d", combo * multiplier)
+        local multiText = string.format("COMBO  x%d", combo * multiplier)
+        local mw = fonts.medium:getWidth(multiText) + 28
+        Visuals.pill(850, 16, mw, 28, {0.22, 0.04, 0.12, 0.7}, {1.0, 0.32, 0.62, 0.55})
         love.graphics.setColor(Constants.COLORS.ACCENT_PINK)
-        love.graphics.print(multiText, 850, 18)
+        love.graphics.print(multiText, 864, 20)
     end
 
     -- Pulsing Animated Heart Containers for Lives
@@ -137,16 +165,16 @@ function UI.drawHUD(score, highScore, lives, levelName, combo, multiplier, safet
         love.graphics.translate(hx, hy)
         love.graphics.scale(heartScale, heartScale)
 
-        -- Glowing Heart Outer Aura
-        love.graphics.setColor(1, 0.2, 0.4, 0.3)
-        love.graphics.circle("fill", -4, -4, 8)
-        love.graphics.circle("fill", 4, -4, 8)
+        love.graphics.setColor(1, 0.22, 0.42, 0.22)
+        love.graphics.circle("fill", -4, -4, 9)
+        love.graphics.circle("fill", 4, -4, 9)
 
-        -- Core Animated Heart
-        love.graphics.setColor(1, 0.25, 0.50, 1)
+        love.graphics.setColor(1, 0.28, 0.52, 1)
         love.graphics.circle("fill", -4, -4, 6)
         love.graphics.circle("fill", 4, -4, 6)
-        love.graphics.polygon("fill", -10, -2, 10, -2, 0, 10)
+        love.graphics.polygon("fill", -10, -2, 10, -2, 0, 11)
+        love.graphics.setColor(1, 0.72, 0.82, 0.55)
+        love.graphics.circle("fill", -5, -5, 2.2)
 
         love.graphics.pop()
     end
@@ -186,16 +214,18 @@ function UI.drawHUD(score, highScore, lives, levelName, combo, multiplier, safet
     -- Draw Safety Net Electric Shield if Active
     if safetyNetActive then
         local netY = Constants.VIRTUAL_HEIGHT - 25
-        local alphaPulse = 0.6 + math.sin(titlePulse * 4) * 0.3
+        local alphaPulse = 0.45 + math.sin(titlePulse * 4) * 0.25
 
-        love.graphics.setColor(0.0, 0.85, 1.0, alphaPulse)
-        love.graphics.setLineWidth(4)
+        love.graphics.setBlendMode("add")
+        love.graphics.setColor(0.2, 0.85, 1.0, alphaPulse * 0.35)
+        love.graphics.rectangle("fill", Constants.PLAYFIELD_X, netY - 6, Constants.PLAYFIELD_WIDTH, 12, 6, 6)
+        love.graphics.setColor(0.35, 0.95, 1.0, alphaPulse)
+        love.graphics.setLineWidth(3)
         love.graphics.line(Constants.PLAYFIELD_X, netY, Constants.PLAYFIELD_X + Constants.PLAYFIELD_WIDTH, netY)
-
-        -- Glowing node circles along safety net
-        for x = Constants.PLAYFIELD_X, Constants.PLAYFIELD_X + Constants.PLAYFIELD_WIDTH, 40 do
-            love.graphics.circle("fill", x, netY, 4)
+        for x = Constants.PLAYFIELD_X, Constants.PLAYFIELD_X + Constants.PLAYFIELD_WIDTH, 36 do
+            love.graphics.circle("fill", x, netY, 3.5)
         end
+        love.graphics.setBlendMode("alpha")
     end
 
     love.graphics.setColor(1, 1, 1, 1)
@@ -203,54 +233,57 @@ end
 
 -- Main Title Screen Menu
 function UI.drawStartScreen(highScore, selectedIndex, menuOptions)
-    love.graphics.setColor(0, 0, 0, 0.45)
+    love.graphics.setColor(0.02, 0.02, 0.08, 0.38)
     love.graphics.rectangle("fill", 0, 0, Constants.VIRTUAL_WIDTH, Constants.VIRTUAL_HEIGHT)
 
-    -- Floating Header Logo Frame
-    local titleY = 100 + math.sin(titlePulse) * 5
+    local titleY = 60 + math.sin(titlePulse) * 5
+    local title = "BREAKOUT ARCADE"
     love.graphics.setFont(fonts.title)
+    local tx = (Constants.VIRTUAL_WIDTH - fonts.title:getWidth(title)) / 2
 
-    -- Drop Shadow Header
-    love.graphics.setColor(Constants.COLORS.ACCENT_PINK)
-    love.graphics.print("BREAKOUT ARCADE", (Constants.VIRTUAL_WIDTH - fonts.title:getWidth("BREAKOUT ARCADE")) / 2 + 4, titleY + 4)
+    love.graphics.setBlendMode("add")
+    love.graphics.setColor(1.00, 0.28, 0.70, 0.35)
+    love.graphics.print(title, tx + 5, titleY + 5)
+    love.graphics.setColor(0.20, 0.90, 1.00, 0.55)
+    love.graphics.print(title, tx, titleY)
+    love.graphics.setBlendMode("alpha")
+    love.graphics.setColor(0.96, 0.98, 1.00, 1)
+    love.graphics.print(title, tx, titleY)
 
-    -- Cyan Main Header
-    love.graphics.setColor(Constants.COLORS.ACCENT_CYAN)
-    love.graphics.print("BREAKOUT ARCADE", (Constants.VIRTUAL_WIDTH - fonts.title:getWidth("BREAKOUT ARCADE")) / 2, titleY)
-
-    drawCenteredText(fonts.medium, "★ LÖVE 2D EDITION ★", titleY + 68, Constants.COLORS.ACCENT_GOLD)
-    drawCenteredText(fonts.medium, string.format("HIGH SCORE: %06d", highScore), titleY + 102, Constants.COLORS.TEXT_MUTED)
+    drawCenteredText(fonts.medium, "NEON EDITION", titleY + 62, Constants.COLORS.ACCENT_GOLD)
+    drawCenteredText(fonts.score, string.format("HIGH SCORE  %06d", highScore), titleY + 92, Constants.COLORS.TEXT_MUTED)
 
     -- Glassmorphic Menu Container Card
-    local cardW, cardH = 460, 240
+    local cardW, cardH = 460, 280
     local cardX = (Constants.VIRTUAL_WIDTH - cardW) / 2
-    local cardY = 305
+    local cardY = 222
     UI.drawGlassCard(cardX, cardY, cardW, cardH, 16, {0.00, 0.90, 1.00, 0.4})
 
     -- Interactive Menu Buttons
-    local startY = cardY + 28
+    local startY = cardY + 20
     for i, optionText in ipairs(menuOptions) do
-        UI.drawMenuButton(fonts.medium, optionText, startY + (i - 1) * 62, selectedIndex == i, 380)
+        UI.drawMenuButton(fonts.medium, optionText, startY + (i - 1) * 60, selectedIndex == i, 390)
     end
 
     -- Navigation Helper Footer
-    drawCenteredText(fonts.small, "Use UP / DOWN or Mouse to Navigate  •  ENTER / Click to Select", 570, Constants.COLORS.TEXT_MUTED)
+    drawCenteredText(fonts.small, "Use UP / DOWN or Mouse to Navigate  •  ENTER / Click to Select", 516, Constants.COLORS.TEXT_MUTED)
 
     -- Controls Guide Box
-    local ctrlW, ctrlH = 580, 85
+    local ctrlW, ctrlH = 740, 80
     local ctrlX = (Constants.VIRTUAL_WIDTH - ctrlW) / 2
-    UI.drawGlassCard(ctrlX, 608, ctrlW, ctrlH, 12, {0.3, 0.3, 0.5, 0.4})
+    local ctrlY = 550
+    UI.drawGlassCard(ctrlX, ctrlY, ctrlW, ctrlH, 12, {0.3, 0.3, 0.5, 0.4})
 
-    drawCenteredText(fonts.small, "CONTROLS GUIDE", 618, Constants.COLORS.ACCENT_GOLD)
-    drawCenteredText(fonts.small, "Paddle: Left / Right Arrows or Mouse  |  Launch / Lasers: Spacebar or Left Click", 642, Constants.COLORS.TEXT_MAIN)
-    drawCenteredText(fonts.small, "Pause Game: P  |  Quit: Select Quit or press Escape", 665, Constants.COLORS.TEXT_MUTED)
+    drawCenteredText(fonts.small, "CONTROLS GUIDE", ctrlY + 10, Constants.COLORS.ACCENT_GOLD)
+    drawCenteredText(fonts.small, "Paddle: Left / Right Arrows or Mouse  |  Launch / Lasers: Spacebar or Left Click", ctrlY + 32, Constants.COLORS.TEXT_MAIN)
+    drawCenteredText(fonts.small, "Pause: P  |  Music Toggle: M  |  Fullscreen: F11 / Alt+Enter  |  Quit: Esc", ctrlY + 54, Constants.COLORS.TEXT_MUTED)
 
     love.graphics.setColor(1, 1, 1, 1)
 end
 
 -- Stage Selector Screen
 function UI.drawLevelSelectScreen(selectedLevelIndex, levelNames)
-    love.graphics.setColor(0, 0, 0, 0.60)
+    love.graphics.setColor(0.02, 0.03, 0.10, 0.48)
     love.graphics.rectangle("fill", 0, 0, Constants.VIRTUAL_WIDTH, Constants.VIRTUAL_HEIGHT)
 
     drawCenteredText(fonts.title, "SELECT STAGE", 100, Constants.COLORS.ACCENT_CYAN, {0, 0, 0, 0.8})
@@ -282,30 +315,31 @@ end
 
 -- Pause Screen Overlay
 function UI.drawPauseScreen(selectedIndex, menuOptions)
-    love.graphics.setColor(0, 0, 0, 0.65)
+    love.graphics.setColor(0.02, 0.04, 0.10, 0.52)
     love.graphics.rectangle("fill", 0, 0, Constants.VIRTUAL_WIDTH, Constants.VIRTUAL_HEIGHT)
 
-    drawCenteredText(fonts.title, "GAME PAUSED", 160, Constants.COLORS.ACCENT_CYAN, {0, 0, 0, 0.8})
+    drawCenteredText(fonts.title, "GAME PAUSED", 110, Constants.COLORS.ACCENT_CYAN, {0, 0, 0, 0.8})
 
     -- Glass Modal Card
-    local cardW, cardH = 440, 240
+    local cardW, cardH = 460, 280
     local cardX = (Constants.VIRTUAL_WIDTH - cardW) / 2
-    local cardY = 250
+    local cardY = 195
     UI.drawGlassCard(cardX, cardY, cardW, cardH, 16, {0.0, 0.9, 1.0, 0.4})
 
-    local startY = cardY + 28
+    local startY = cardY + 20
     for i, text in ipairs(menuOptions) do
-        UI.drawMenuButton(fonts.medium, text, startY + (i - 1) * 62, selectedIndex == i, 380)
+        UI.drawMenuButton(fonts.medium, text, startY + (i - 1) * 60, selectedIndex == i, 390)
     end
 
-    drawCenteredText(fonts.small, "Use UP / DOWN or Mouse to navigate  •  ENTER / Click to select", 515, Constants.COLORS.TEXT_MUTED)
+    drawCenteredText(fonts.small, "Use UP / DOWN or Mouse to navigate  •  ENTER / Click to select", 490, Constants.COLORS.TEXT_MUTED)
+    drawCenteredText(fonts.small, "Press F11 or Alt+Enter to Toggle Fullscreen Mode", 518, Constants.COLORS.ACCENT_CYAN)
 
     love.graphics.setColor(1, 1, 1, 1)
 end
 
 -- Game Over Screen Overlay
 function UI.drawGameOverScreen(finalScore, highScore, isNewHigh, selectedIndex, menuOptions)
-    love.graphics.setColor(0.10, 0.02, 0.05, 0.85)
+    love.graphics.setColor(0.12, 0.02, 0.06, 0.62)
     love.graphics.rectangle("fill", 0, 0, Constants.VIRTUAL_WIDTH, Constants.VIRTUAL_HEIGHT)
 
     drawCenteredText(fonts.title, "GAME OVER", 120, Constants.COLORS.BRICK_TNT, {0, 0, 0, 0.9})
@@ -334,7 +368,7 @@ end
 
 -- Victory Screen Overlay
 function UI.drawVictoryScreen(finalScore, selectedIndex, menuOptions)
-    love.graphics.setColor(0.02, 0.10, 0.05, 0.85)
+    love.graphics.setColor(0.02, 0.10, 0.06, 0.58)
     love.graphics.rectangle("fill", 0, 0, Constants.VIRTUAL_WIDTH, Constants.VIRTUAL_HEIGHT)
 
     drawCenteredText(fonts.title, "STAGE CLEARED!", 130, Constants.COLORS.ACCENT_GOLD, {0, 0, 0, 0.9})

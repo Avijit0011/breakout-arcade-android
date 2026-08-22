@@ -7,6 +7,7 @@ local Paddle    = require("src.paddle")
 local Ball      = require("src.ball")
 local Levels    = require("src.levels")
 local UI        = require("src.ui")
+local Visuals   = require("src.visuals")
 
 -- Game State Variables
 local gameState = "start" -- "start", "levelselect", "serve", "play", "paused", "gameover", "victory"
@@ -28,11 +29,6 @@ local safetyNetActive = false
 -- Menu Options & Selection Tracking
 local menuIndex = 1
 
-local startMenuOptions = {"START GAME", "SELECT STAGE", "QUIT GAME"}
-local pauseMenuOptions = {"RESUME GAME", "MAIN MENU", "QUIT GAME"}
-local gameOverOptions  = {"PLAY AGAIN", "MAIN MENU", "QUIT GAME"}
-local victoryOptions   = {"NEXT STAGE", "MAIN MENU", "QUIT GAME"}
-
 local levelSelectOptions = {
     "1. Rainbow Arcade",
     "2. Crystal Pyramid",
@@ -42,8 +38,62 @@ local levelSelectOptions = {
     "BACK TO MAIN MENU"
 }
 
--- Viewport Canvas Scaling
+local gameOverOptions  = {"PLAY AGAIN", "MAIN MENU", "QUIT GAME"}
+local victoryOptions   = {"NEXT STAGE", "MAIN MENU", "QUIT GAME"}
+
+-- Viewport Canvas Scaling & Display Mode State
 local scaleX, scaleY, offsetX, offsetY
+local isFullscreen = false
+
+-- Recalculate canvas viewport scaling
+local function updateViewport()
+    local w, h = love.graphics.getDimensions()
+    local scale = math.min(w / Constants.VIRTUAL_WIDTH, h / Constants.VIRTUAL_HEIGHT)
+    scaleX = scale
+    scaleY = scale
+    offsetX = (w - Constants.VIRTUAL_WIDTH * scale) / 2
+    offsetY = (h - Constants.VIRTUAL_HEIGHT * scale) / 2
+end
+
+local function saveSettings()
+    local data = string.format("fullscreen=%s\n", tostring(isFullscreen))
+    love.filesystem.write("settings.dat", data)
+end
+
+local function setDisplayMode(fullscreen)
+    isFullscreen = fullscreen
+    if isFullscreen then
+        love.window.setFullscreen(true, "desktop")
+    else
+        love.window.setFullscreen(false)
+        love.window.setMode(1920, 1080, {fullscreen = false, resizable = true, vsync = 1, highdpi = true})
+    end
+    updateViewport()
+    saveSettings()
+end
+
+local function toggleDisplayMode()
+    setDisplayMode(not isFullscreen)
+end
+
+local function loadSettings()
+    if love.filesystem.getInfo("settings.dat") then
+        local contents = love.filesystem.read("settings.dat")
+        if contents and contents:match("fullscreen=true") then
+            setDisplayMode(true)
+        end
+    end
+end
+
+local function getStartMenuOptions()
+    local modeTxt = isFullscreen and "DISPLAY: FULLSCREEN" or "DISPLAY: WINDOWED (1080p)"
+    return {"START GAME", "SELECT STAGE", modeTxt, "QUIT GAME"}
+end
+
+local function getPauseMenuOptions()
+    local modeTxt = isFullscreen and "DISPLAY: FULLSCREEN" or "DISPLAY: WINDOWED (1080p)"
+    return {"RESUME GAME", modeTxt, "MAIN MENU", "QUIT GAME"}
+end
 
 -- Load High Score from Love2D filesystem
 local function loadHighScore()
@@ -62,16 +112,6 @@ local function saveHighScore()
         isNewHighScore = true
         love.filesystem.write("highscore.dat", tostring(highScore))
     end
-end
-
--- Recalculate canvas viewport scaling
-local function updateViewport()
-    local w, h = love.graphics.getDimensions()
-    local scale = math.min(w / Constants.VIRTUAL_WIDTH, h / Constants.VIRTUAL_HEIGHT)
-    scaleX = scale
-    scaleY = scale
-    offsetX = (w - Constants.VIRTUAL_WIDTH * scale) / 2
-    offsetY = (h - Constants.VIRTUAL_HEIGHT * scale) / 2
 end
 
 -- Convert screen mouse coordinates to virtual resolution coordinates
@@ -124,9 +164,12 @@ end
 function love.load()
     love.graphics.setDefaultFilter("linear", "linear")
     Sounds.init()
+    Sounds.playBGM()
     Particle.init()
+    Visuals.init()
     UI.init()
     loadHighScore()
+    loadSettings()
 
     paddle = Paddle.new()
     updateViewport()
@@ -251,6 +294,8 @@ local function confirmMenuSelection()
             menuIndex = 1
             gameState = "levelselect"
         elseif menuIndex == 3 then
+            toggleDisplayMode()
+        elseif menuIndex == 4 then
             love.event.quit()
         end
     elseif gameState == "levelselect" then
@@ -267,9 +312,11 @@ local function confirmMenuSelection()
         if menuIndex == 1 then
             gameState = "play"
         elseif menuIndex == 2 then
+            toggleDisplayMode()
+        elseif menuIndex == 3 then
             menuIndex = 1
             gameState = "start"
-        elseif menuIndex == 3 then
+        elseif menuIndex == 4 then
             love.event.quit()
         end
     elseif gameState == "gameover" then
@@ -303,7 +350,8 @@ function love.update(dt)
 
     -- Handle mouse hover selection in menus
     if gameState == "start" then
-        local hoverIdx = getHoveredMenuIndex(333, #startMenuOptions, 50, 62, 380)
+        local startOpts = getStartMenuOptions()
+        local hoverIdx = getHoveredMenuIndex(242, #startOpts, 50, 60, 390)
         if hoverIdx and hoverIdx ~= menuIndex then
             menuIndex = hoverIdx
             Sounds.play("wall_hit")
@@ -317,7 +365,8 @@ function love.update(dt)
         end
         return
     elseif gameState == "paused" then
-        local hoverIdx = getHoveredMenuIndex(278, #pauseMenuOptions, 50, 62, 380)
+        local pauseOpts = getPauseMenuOptions()
+        local hoverIdx = getHoveredMenuIndex(215, #pauseOpts, 50, 60, 390)
         if hoverIdx and hoverIdx ~= menuIndex then
             menuIndex = hoverIdx
             Sounds.play("wall_hit")
@@ -424,6 +473,16 @@ end
 
 -- Key Press Input Callback
 function love.keypressed(key)
+    if key == "f11" or (key == "return" and (love.keyboard.isDown("lalt") or love.keyboard.isDown("ralt"))) then
+        toggleDisplayMode()
+        return
+    end
+
+    if key == "m" then
+        Sounds.toggleMusic()
+        return
+    end
+
     if key == "p" then
         if gameState == "play" then
             menuIndex = 1
@@ -445,7 +504,11 @@ function love.keypressed(key)
     end
 
     local maxOptions = 3
-    if gameState == "levelselect" then
+    if gameState == "start" then
+        maxOptions = #getStartMenuOptions()
+    elseif gameState == "paused" then
+        maxOptions = #getPauseMenuOptions()
+    elseif gameState == "levelselect" then
         maxOptions = #levelSelectOptions
     end
 
@@ -498,33 +561,17 @@ end
 
 -- Main Draw Loop
 function love.draw()
+    local sw, sh = love.graphics.getDimensions()
+    love.graphics.setColor(0.015, 0.01, 0.04, 1)
+    love.graphics.rectangle("fill", 0, 0, sw, sh)
+
     love.graphics.push()
     love.graphics.translate(offsetX, offsetY)
     love.graphics.scale(scaleX, scaleY)
 
-    -- Background fill
-    love.graphics.setColor(Constants.COLORS.BACKGROUND)
-    love.graphics.rectangle("fill", 0, 0, Constants.VIRTUAL_WIDTH, Constants.VIRTUAL_HEIGHT)
-
-    -- Ambient Parallax Starfield Background
+    Visuals.drawBackground(love.timer.getTime())
     Particle.drawStarfield()
-
-    -- Retro grid lines
-    love.graphics.setColor(Constants.COLORS.GRID_LINE)
-    love.graphics.setLineWidth(1)
-    for x = 0, Constants.VIRTUAL_WIDTH, 40 do
-        love.graphics.line(x, 0, x, Constants.VIRTUAL_HEIGHT)
-    end
-    for y = 0, Constants.VIRTUAL_HEIGHT, 40 do
-        love.graphics.line(0, y, Constants.VIRTUAL_WIDTH, y)
-    end
-
-    -- Playfield Border
-    love.graphics.setColor(Constants.COLORS.HUD_BG)
-    love.graphics.rectangle("fill", Constants.PLAYFIELD_X, Constants.PLAYFIELD_Y, Constants.PLAYFIELD_WIDTH, Constants.PLAYFIELD_HEIGHT, 12, 12)
-    love.graphics.setColor(Constants.COLORS.ACCENT_CYAN)
-    love.graphics.setLineWidth(2.5)
-    love.graphics.rectangle("line", Constants.PLAYFIELD_X, Constants.PLAYFIELD_Y, Constants.PLAYFIELD_WIDTH, Constants.PLAYFIELD_HEIGHT, 12, 12)
+    Visuals.drawPlayfield()
 
     -- Apply Screen Shake
     love.graphics.push()
@@ -554,18 +601,20 @@ function love.draw()
 
     -- Draw State Overlays
     if gameState == "start" then
-        UI.drawStartScreen(highScore, menuIndex, startMenuOptions)
+        UI.drawStartScreen(highScore, menuIndex, getStartMenuOptions())
     elseif gameState == "levelselect" then
         UI.drawLevelSelectScreen(menuIndex, levelSelectOptions)
     elseif gameState == "serve" then
         UI.drawServeScreen(levelName)
     elseif gameState == "paused" then
-        UI.drawPauseScreen(menuIndex, pauseMenuOptions)
+        UI.drawPauseScreen(menuIndex, getPauseMenuOptions())
     elseif gameState == "gameover" then
         UI.drawGameOverScreen(score, highScore, isNewHighScore, menuIndex, gameOverOptions)
     elseif gameState == "victory" then
         UI.drawVictoryScreen(score, menuIndex, victoryOptions)
     end
+
+    Visuals.drawVignetteAndScanlines()
 
     love.graphics.pop() -- End Viewport Transform
 end

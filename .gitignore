@@ -2,8 +2,12 @@
 love/
 love.zip
 
-# Game Save Data
+# Game Save Data & Settings
 highscore.dat
+settings.dat
+
+# Build Output
+dist/
 
 # OS & IDE Files
 .DS_Store

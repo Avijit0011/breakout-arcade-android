@@ -63,17 +63,22 @@ function Powerup.drawAll()
         love.graphics.translate(p.x, p.y)
         love.graphics.scale(scale, scale)
 
-        -- Capsule Background
-        love.graphics.setColor(p.color)
+        love.graphics.setBlendMode("add")
+        love.graphics.setColor(p.color[1], p.color[2], p.color[3], 0.28)
+        love.graphics.rectangle("fill", -p.width / 2 - 6, -p.height / 2 - 6, p.width + 12, p.height + 12, 12, 12)
+        love.graphics.setBlendMode("alpha")
+
+        love.graphics.setColor(p.color[1] * 0.25, p.color[2] * 0.25, p.color[3] * 0.3, 0.95)
         love.graphics.rectangle("fill", -p.width / 2, -p.height / 2, p.width, p.height, 10, 10)
 
-        -- Capsule Border
-        love.graphics.setColor(1, 1, 1, 0.9)
-        love.graphics.setLineWidth(2)
+        love.graphics.setColor(p.color)
+        love.graphics.rectangle("fill", -p.width / 2 + 2, -p.height / 2 + 2, p.width - 4, p.height * 0.55, 8, 8)
+
+        love.graphics.setColor(1, 1, 1, 0.85)
+        love.graphics.setLineWidth(1.8)
         love.graphics.rectangle("line", -p.width / 2, -p.height / 2, p.width, p.height, 10, 10)
 
-        -- Icon Label text
-        love.graphics.setColor(0, 0, 0, 0.9)
+        love.graphics.setColor(1, 1, 1, 0.95)
         local labelMap = {
             MULTIBALL  = "3x",
             EXPAND     = "< >",

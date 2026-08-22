@@ -16,15 +16,17 @@ function Particle.init()
     stars = {}
     shakeTimer = 0
 
-    -- Initialize ambient background starfield
-    for i = 1, 70 do
+    -- Initialize layered ambient starfield
+    for i = 1, 110 do
+        local layer = (i <= 40) and 1 or ((i <= 80) and 2 or 3)
         table.insert(stars, {
             x = love.math.random(0, Constants.VIRTUAL_WIDTH),
             y = love.math.random(0, Constants.VIRTUAL_HEIGHT),
-            speed = 15 + love.math.random() * 40,
-            radius = 0.8 + love.math.random() * 1.8,
-            alpha = 0.2 + love.math.random() * 0.6,
-            twinkle = love.math.random() * math.pi * 2
+            speed = ({12, 28, 55})[layer] + love.math.random() * ({18, 22, 30})[layer],
+            radius = ({0.6, 1.1, 1.8})[layer] + love.math.random() * ({0.5, 0.8, 1.1})[layer],
+            alpha = ({0.18, 0.35, 0.55})[layer] + love.math.random() * 0.25,
+            twinkle = love.math.random() * math.pi * 2,
+            sparkle = layer == 3
         })
     end
 end
@@ -137,21 +139,34 @@ function Particle.update(dt)
 end
 
 function Particle.drawStarfield()
+    love.graphics.setBlendMode("add")
     for _, s in ipairs(stars) do
-        local currentAlpha = s.alpha * (0.6 + math.sin(s.twinkle) * 0.4)
-        love.graphics.setColor(0.8, 0.9, 1.0, currentAlpha)
+        local twinkle = 0.55 + math.sin(s.twinkle) * 0.45
+        local currentAlpha = s.alpha * twinkle
+        love.graphics.setColor(0.75, 0.88, 1.0, currentAlpha)
         love.graphics.circle("fill", s.x, s.y, s.radius)
+        if s.sparkle then
+            love.graphics.setColor(1, 1, 1, currentAlpha * 0.55)
+            love.graphics.setLineWidth(1)
+            local arm = s.radius * 3.2
+            love.graphics.line(s.x - arm, s.y, s.x + arm, s.y)
+            love.graphics.line(s.x, s.y - arm, s.x, s.y + arm)
+        end
     end
+    love.graphics.setBlendMode("alpha")
     love.graphics.setColor(1, 1, 1, 1)
 end
 
 function Particle.draw()
-    -- Draw Particles
+    love.graphics.setBlendMode("add")
     for _, p in ipairs(particles) do
         love.graphics.setColor(p.color)
-        local curSize = p.size * (p.life / p.maxLife)
+        local curSize = p.size * (0.35 + 0.65 * (p.life / p.maxLife))
+        love.graphics.circle("fill", p.x, p.y, curSize * 1.8)
+        love.graphics.setColor(p.color[1], p.color[2], p.color[3], (p.color[4] or 1) * 0.9)
         love.graphics.circle("fill", p.x, p.y, curSize)
     end
+    love.graphics.setBlendMode("alpha")
 
     -- Draw Floating Score Popups
     local font = love.graphics.getFont()

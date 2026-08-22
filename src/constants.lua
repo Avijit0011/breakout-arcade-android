@@ -11,15 +11,18 @@ Constants.PLAYFIELD_HEIGHT = 650
 
 -- Color Palette (RGB 0.0 - 1.0 for LÖVE 11+)
 Constants.COLORS = {
-    BACKGROUND      = {0.05, 0.04, 0.10, 1.0},
+    BACKGROUND      = {0.03, 0.02, 0.08, 1.0},
+    SKY_TOP         = {0.04, 0.03, 0.12, 1.0},
+    SKY_BOTTOM      = {0.10, 0.04, 0.16, 1.0},
     GRID_LINE       = {0.12, 0.10, 0.22, 0.5},
-    HUD_BG          = {0.08, 0.06, 0.15, 0.9},
-    TEXT_MAIN       = {0.95, 0.95, 1.00, 1.0},
-    TEXT_MUTED      = {0.60, 0.60, 0.75, 1.0},
-    ACCENT_CYAN     = {0.00, 0.90, 1.00, 1.0},
-    ACCENT_GOLD     = {1.00, 0.80, 0.10, 1.0},
-    ACCENT_PINK     = {1.00, 0.25, 0.60, 1.0},
-    SAFETY_NET      = {0.00, 0.85, 1.00, 0.8},
+    HUD_BG          = {0.06, 0.05, 0.14, 0.72},
+    TEXT_MAIN       = {0.96, 0.97, 1.00, 1.0},
+    TEXT_MUTED      = {0.62, 0.66, 0.82, 1.0},
+    ACCENT_CYAN     = {0.25, 0.95, 1.00, 1.0},
+    ACCENT_GOLD     = {1.00, 0.84, 0.28, 1.0},
+    ACCENT_PINK     = {1.00, 0.32, 0.68, 1.0},
+    ACCENT_VIOLET   = {0.62, 0.38, 1.00, 1.0},
+    SAFETY_NET      = {0.20, 0.90, 1.00, 0.85},
 
     PADDLE_BASE     = {0.20, 0.75, 0.95, 1.0},
     PADDLE_GLOW     = {0.00, 0.90, 1.00, 0.4},
