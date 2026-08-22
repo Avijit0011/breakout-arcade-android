@@ -132,6 +132,15 @@ local function getPauseMenuOptions()
     return {"RESUME GAME", modeTxt, "MAIN MENU", "QUIT GAME"}
 end
 
+local function getLevelSelectOptions()
+    local opts = {}
+    for _, name in ipairs(Levels.getLevelNames()) do
+        table.insert(opts, name)
+    end
+    table.insert(opts, "BACK TO MAIN MENU")
+    return opts
+end
+
 -- Load High Score from Love2D filesystem
 local function loadHighScore()
     if love.filesystem.getInfo("highscore.dat") then
@@ -315,15 +324,6 @@ local function handlePowerupCollect(type)
         scoreMultiplier = 2
         multiplierTimer = 15.0
     end
-end
-
-local function getLevelSelectOptions()
-    local opts = {}
-    for _, name in ipairs(Levels.getLevelNames()) do
-        table.insert(opts, name)
-    end
-    table.insert(opts, "BACK TO MAIN MENU")
-    return opts
 end
 
 -- Hover index detector for Scrollable Stage Select List
