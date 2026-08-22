@@ -45,6 +45,43 @@ local victoryOptions   = {"NEXT STAGE", "MAIN MENU", "QUIT GAME"}
 local scaleX, scaleY, offsetX, offsetY
 local isFullscreen = false
 
+-- Scroll Viewport State for Stage Selection
+local levelScrollY = 0
+local scrollTargetY = 0
+
+-- Mouse Wheel Input Callback for Scrolling
+function love.wheelmoved(x, y)
+    if gameState == "levelselect" then
+        local opts = getLevelSelectOptions()
+        local totalH = #opts * 56
+        local viewH = 370
+        local maxScroll = math.max(0, totalH - viewH)
+
+        if y > 0 then
+            scrollTargetY = math.max(0, scrollTargetY - 75)
+        elseif y < 0 then
+            scrollTargetY = math.min(maxScroll, scrollTargetY + 75)
+        end
+    end
+end
+
+-- Ensure selected level is scrolled smoothly into viewport visibility
+local function ensureLevelVisible(index, totalItems)
+    local itemSpacing = 56
+    local viewH = 370
+    local itemTop = (index - 1) * itemSpacing
+    local itemBottom = itemTop + 50
+
+    local totalH = totalItems * itemSpacing
+    local maxScroll = math.max(0, totalH - viewH)
+
+    if itemTop < scrollTargetY then
+        scrollTargetY = math.max(0, itemTop - 10)
+    elseif itemBottom > (scrollTargetY + viewH) then
+        scrollTargetY = math.min(maxScroll, itemBottom - viewH + 10)
+    end
+end
+
 -- Recalculate canvas viewport scaling
 local function updateViewport()
     local w, h = love.graphics.getDimensions()
@@ -289,44 +326,26 @@ local function getLevelSelectOptions()
     return opts
 end
 
--- Hover index detector for 2-column Stage Select Grid
+-- Hover index detector for Scrollable Stage Select List
 local function getHoveredLevelIndex(optionsCount)
     local vx, vy = getVirtualMouse()
-    local yStart = 155
-    local ySpacing = 58
-    local hBtn = 48
+    local cardW = 580
+    local cardX = (Constants.VIRTUAL_WIDTH - cardW) / 2
+    local cardY = 135
 
-    -- Left Column (Stages 1..5)
-    if vx >= 245 and vx <= (245 + 380) then
-        for i = 1, math.min(5, optionsCount) do
-            local top = yStart + (i - 1) * ySpacing
-            local bottom = top + hBtn
-            if vy >= top and vy <= bottom then
-                return i
-            end
+    local viewX = cardX + 25
+    local viewY = cardY + 20
+    local viewW = cardW - 70
+    local viewH = 370
+    local itemSpacing = 56
+
+    if vx >= viewX and vx <= (viewX + viewW) and vy >= viewY and vy <= (viewY + viewH) then
+        local relativeY = (vy - viewY) + levelScrollY
+        local hoverIndex = math.floor(relativeY / itemSpacing) + 1
+        if hoverIndex >= 1 and hoverIndex <= optionsCount then
+            return hoverIndex
         end
     end
-
-    -- Right Column (Stages 6..10)
-    if vx >= 655 and vx <= (655 + 380) then
-        for i = 6, math.min(10, optionsCount - 1) do
-            local top = yStart + (i - 6) * ySpacing
-            local bottom = top + hBtn
-            if vy >= top and vy <= bottom then
-                return i
-            end
-        end
-    end
-
-    -- Back Button (Option #optionsCount)
-    local xBack = 410
-    local wBack = 460
-    local top = 540
-    local bottom = top + hBtn
-    if vx >= xBack and vx <= (xBack + wBack) and vy >= top and vy <= bottom then
-        return optionsCount
-    end
-
     return nil
 end
 
@@ -342,6 +361,8 @@ local function confirmMenuSelection()
             loadLevel(1)
         elseif menuIndex == 2 then
             menuIndex = 1
+            levelScrollY = 0
+            scrollTargetY = 0
             gameState = "levelselect"
         elseif menuIndex == 3 then
             toggleDisplayMode()
@@ -409,6 +430,7 @@ function love.update(dt)
         end
         return
     elseif gameState == "levelselect" then
+        levelScrollY = levelScrollY + (scrollTargetY - levelScrollY) * math.min(1, dt * 18)
         local lvlOpts = getLevelSelectOptions()
         local hoverIdx = getHoveredLevelIndex(#lvlOpts)
         if hoverIdx and hoverIdx ~= menuIndex then
@@ -558,26 +580,16 @@ function love.keypressed(key)
     if gameState == "levelselect" then
         local lvlOpts = getLevelSelectOptions()
         local maxOpts = #lvlOpts
-        if key == "left" or key == "a" then
-            if menuIndex > 5 and menuIndex <= 10 then
-                menuIndex = menuIndex - 5
-                Sounds.play("wall_hit")
-            end
-            return
-        elseif key == "right" or key == "d" then
-            if menuIndex >= 1 and menuIndex <= 5 then
-                menuIndex = math.min(10, menuIndex + 5)
-                Sounds.play("wall_hit")
-            end
-            return
-        elseif key == "up" or key == "w" then
+        if key == "up" or key == "w" then
             menuIndex = menuIndex - 1
             if menuIndex < 1 then menuIndex = maxOpts end
+            ensureLevelVisible(menuIndex, maxOpts)
             Sounds.play("wall_hit")
             return
         elseif key == "down" or key == "s" then
             menuIndex = menuIndex + 1
             if menuIndex > maxOpts then menuIndex = 1 end
+            ensureLevelVisible(menuIndex, maxOpts)
             Sounds.play("wall_hit")
             return
         elseif key == "return" or key == "space" then
@@ -684,7 +696,7 @@ function love.draw()
     if gameState == "start" then
         UI.drawStartScreen(highScore, menuIndex, getStartMenuOptions())
     elseif gameState == "levelselect" then
-        UI.drawLevelSelectScreen(menuIndex, getLevelSelectOptions())
+        UI.drawLevelSelectScreen(menuIndex, getLevelSelectOptions(), levelScrollY, scaleX, scaleY, offsetX, offsetY)
     elseif gameState == "serve" then
         UI.drawServeScreen(levelName)
     elseif gameState == "paused" then

@@ -281,27 +281,92 @@ function UI.drawStartScreen(highScore, selectedIndex, menuOptions)
     love.graphics.setColor(1, 1, 1, 1)
 end
 
--- Stage Selector Screen
-function UI.drawLevelSelectScreen(selectedLevelIndex, levelNames)
+-- Stage Selector Screen (Scrollable Glass Modal List)
+function UI.drawLevelSelectScreen(selectedLevelIndex, levelNames, scrollY, scaleX, scaleY, offsetX, offsetY)
     love.graphics.setColor(0.02, 0.03, 0.10, 0.48)
     love.graphics.rectangle("fill", 0, 0, Constants.VIRTUAL_WIDTH, Constants.VIRTUAL_HEIGHT)
 
-    drawCenteredText(fonts.title, "SELECT STAGE", 100, Constants.COLORS.ACCENT_CYAN, {0, 0, 0, 0.8})
+    drawCenteredText(fonts.title, "SELECT STAGE", 65, Constants.COLORS.ACCENT_CYAN, {0, 0, 0, 0.8})
 
-    -- Glass Modal Card
-    local cardW, cardH = 500, 440
+    -- Glass Modal Container Card
+    local cardW, cardH = 580, 440
     local cardX = (Constants.VIRTUAL_WIDTH - cardW) / 2
-    local cardY = 180
+    local cardY = 135
     UI.drawGlassCard(cardX, cardY, cardW, cardH, 16, {0.0, 0.85, 1.0, 0.4})
 
-    local startY = cardY + 25
-    for i, name in ipairs(levelNames) do
-        local isBack = (i == #levelNames)
-        local btnW = isBack and 420 or 440
-        UI.drawMenuButton(fonts.medium, name, startY + (i - 1) * 62, selectedLevelIndex == i, btnW)
+    local viewX = cardX + 25
+    local viewY = cardY + 20
+    local viewW = cardW - 70
+    local viewH = 370
+    local itemH = 50
+    local itemSpacing = 56
+
+    local totalH = #levelNames * itemSpacing
+    local maxScroll = math.max(0, totalH - viewH)
+    local curScroll = math.max(0, math.min(maxScroll, scrollY or 0))
+
+    -- Set Scissor clipping for smooth viewport scrolling
+    if scaleX and scaleY and offsetX and offsetY then
+        local scX = offsetX + viewX * scaleX
+        local scY = offsetY + viewY * scaleY
+        local scW = viewW * scaleX
+        local scH = viewH * scaleY
+        love.graphics.setScissor(scX, scY, scW, scH)
     end
 
-    drawCenteredText(fonts.small, "Select a stage using UP / DOWN or Mouse  •  Press ENTER to Launch", 645, Constants.COLORS.TEXT_MUTED)
+    for i, name in ipairs(levelNames) do
+        local btnY = viewY + (i - 1) * itemSpacing - curScroll
+        -- Only draw buttons visible within the viewport
+        if btnY + itemH >= viewY and btnY <= viewY + viewH then
+            local isSelected = (selectedLevelIndex == i)
+            local isBack = (i == #levelNames)
+            local btnW = isBack and 440 or 490
+            UI.drawMenuButton(fonts.medium, name, btnY, isSelected, btnW, itemH, viewX + (viewW - btnW) / 2)
+        end
+    end
+
+    -- Reset Scissor clipping
+    if scaleX then
+        love.graphics.setScissor()
+    end
+
+    -- Draw Glowing Scrollbar Track & Thumb
+    if maxScroll > 0 then
+        local trackX = cardX + cardW - 22
+        local trackY = viewY
+        local trackH = viewH
+
+        -- Scrollbar Track
+        love.graphics.setColor(0.08, 0.10, 0.20, 0.6)
+        love.graphics.rectangle("fill", trackX, trackY, 8, trackH, 4, 4)
+
+        -- Scrollbar Thumb
+        local thumbH = math.max(35, (viewH / totalH) * trackH)
+        local thumbY = trackY + (curScroll / maxScroll) * (trackH - thumbH)
+
+        love.graphics.setColor(Constants.COLORS.ACCENT_CYAN[1], Constants.COLORS.ACCENT_CYAN[2], Constants.COLORS.ACCENT_CYAN[3], 0.85)
+        love.graphics.rectangle("fill", trackX, thumbY, 8, thumbH, 4, 4)
+
+        love.graphics.setBlendMode("add")
+        love.graphics.setColor(0.2, 0.85, 1.0, 0.3)
+        love.graphics.rectangle("fill", trackX - 1, thumbY - 1, 10, thumbH + 2, 5, 5)
+        love.graphics.setBlendMode("alpha")
+    end
+
+    -- Scroll Indicators
+    if curScroll > 5 then
+        love.graphics.setColor(Constants.COLORS.ACCENT_GOLD)
+        love.graphics.setFont(fonts.badge)
+        love.graphics.print("▲ SCROLL UP", cardX + cardW / 2 - 40, cardY + 6)
+    end
+
+    if curScroll < maxScroll - 5 then
+        love.graphics.setColor(Constants.COLORS.ACCENT_GOLD)
+        love.graphics.setFont(fonts.badge)
+        love.graphics.print("▼ SCROLL DOWN", cardX + cardW / 2 - 48, cardY + cardH - 22)
+    end
+
+    drawCenteredText(fonts.small, "Use Mouse Wheel or UP / DOWN / WASD to Scroll  •  ENTER / Click to Select", 590, Constants.COLORS.TEXT_MUTED)
 
     love.graphics.setColor(1, 1, 1, 1)
 end
