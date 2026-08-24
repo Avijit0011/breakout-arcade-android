@@ -92,50 +92,12 @@ local function updateViewport()
     offsetY = (h - Constants.VIRTUAL_HEIGHT * scale) / 2
 end
 
-local function saveSettings()
-    local data = string.format("fullscreen=%s\n", tostring(isFullscreen))
-    love.filesystem.write("settings.dat", data)
-end
-
-local function setDisplayMode(fullscreen)
-    isFullscreen = fullscreen
-    if isFullscreen then
-        love.window.setFullscreen(true, "desktop")
-    else
-        love.window.setFullscreen(false)
-        love.window.setMode(1920, 1080, {fullscreen = false, resizable = true, vsync = 1, highdpi = true})
-    end
-    updateViewport()
-    saveSettings()
-end
-
-local function toggleDisplayMode()
-    setDisplayMode(not isFullscreen)
-end
-
-local function loadSettings()
-    if love.filesystem.getInfo("settings.dat") then
-        local contents = love.filesystem.read("settings.dat")
-        if contents and contents:match("fullscreen=true") then
-            setDisplayMode(true)
-        end
-    end
-end
-
 local function getStartMenuOptions()
-    if Constants.isAndroid() then
-        return {"START GAME", "SELECT STAGE", "QUIT GAME"}
-    end
-    local modeTxt = isFullscreen and "DISPLAY: FULLSCREEN" or "DISPLAY: WINDOWED (1080p)"
-    return {"START GAME", "SELECT STAGE", modeTxt, "QUIT GAME"}
+    return {"START GAME", "SELECT STAGE", "QUIT GAME"}
 end
 
 local function getPauseMenuOptions()
-    if Constants.isAndroid() then
-        return {"RESUME GAME", "MAIN MENU", "QUIT GAME"}
-    end
-    local modeTxt = isFullscreen and "DISPLAY: FULLSCREEN" or "DISPLAY: WINDOWED (1080p)"
-    return {"RESUME GAME", modeTxt, "MAIN MENU", "QUIT GAME"}
+    return {"RESUME GAME", "MAIN MENU", "QUIT GAME"}
 end
 
 -- Load High Score from Love2D filesystem
@@ -363,24 +325,12 @@ local function confirmMenuSelection()
     Sounds.play("paddle_hit")
 
     if gameState == "start" then
-        if Constants.isAndroid() then
-            if menuIndex == 1 then
-                score = 0; lives = 3; isNewHighScore = false; loadLevel(1)
-            elseif menuIndex == 2 then
-                menuIndex = 1; levelScrollY = 0; scrollTargetY = 0; gameState = "levelselect"
-            elseif menuIndex == 3 then
-                love.event.quit()
-            end
-        else
-            if menuIndex == 1 then
-                score = 0; lives = 3; isNewHighScore = false; loadLevel(1)
-            elseif menuIndex == 2 then
-                menuIndex = 1; levelScrollY = 0; scrollTargetY = 0; gameState = "levelselect"
-            elseif menuIndex == 3 then
-                toggleDisplayMode()
-            elseif menuIndex == 4 then
-                love.event.quit()
-            end
+        if menuIndex == 1 then
+            score = 0; lives = 3; isNewHighScore = false; loadLevel(1)
+        elseif menuIndex == 2 then
+            menuIndex = 1; levelScrollY = 0; scrollTargetY = 0; gameState = "levelselect"
+        elseif menuIndex == 3 then
+            love.event.quit()
         end
     elseif gameState == "levelselect" then
         local lvlCount = Levels.getMapCount()
@@ -390,24 +340,12 @@ local function confirmMenuSelection()
             menuIndex = 1; gameState = "start"
         end
     elseif gameState == "paused" then
-        if Constants.isAndroid() then
-            if menuIndex == 1 then
-                gameState = "play"
-            elseif menuIndex == 2 then
-                menuIndex = 1; gameState = "start"
-            elseif menuIndex == 3 then
-                love.event.quit()
-            end
-        else
-            if menuIndex == 1 then
-                gameState = "play"
-            elseif menuIndex == 2 then
-                toggleDisplayMode()
-            elseif menuIndex == 3 then
-                menuIndex = 1; gameState = "start"
-            elseif menuIndex == 4 then
-                love.event.quit()
-            end
+        if menuIndex == 1 then
+            gameState = "play"
+        elseif menuIndex == 2 then
+            menuIndex = 1; gameState = "start"
+        elseif menuIndex == 3 then
+            love.event.quit()
         end
     elseif gameState == "gameover" then
         if menuIndex == 1 then

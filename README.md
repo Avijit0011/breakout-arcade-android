@@ -1,78 +1,50 @@
-# Breakout Arcade 🎮 (LÖVE 2D & Lua)
+# Breakout Arcade Android 📱🎮 (LÖVE 2D & Lua)
 
-A feature-rich, arcade-quality **Breakout** game built from scratch using the **LÖVE (Love2D)** framework and **Lua**. Features glassmorphic UI design, procedural sound and music synthesis, particle explosion systems, handcrafted level stages, extensive power-ups, and native Windows executable building.
+A feature-rich, arcade-quality **Breakout Arcade** game built specifically for **Android** using **LÖVE (Love2D)** and **Lua**. Features multi-touch drag controls, interactive HUD touch pause button, glassmorphic UI design, procedural sound synthesis, 10 handcrafted level stages, 7 power-ups, and automated Android APK build pipelines.
 
+![Android](https://img.shields.io/badge/Platform-Android-brightgreen?style=for-the-badge&logo=android)
 ![Love2D](https://img.shields.io/badge/LÖVE-11.5-pink?style=for-the-badge&logo=lua)
 ![Lua](https://img.shields.io/badge/Lua-5.1%20%2F%20LuaJIT-blue?style=for-the-badge&logo=lua)
-![Resolution](https://img.shields.io/badge/Resolution-1080p%20Full%20HD-brightgreen?style=for-the-badge)
+![Resolution](https://img.shields.io/badge/Resolution-1080p%20Landscape-brightgreen?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 ---
 
 ## 🌟 Key Features
 
-- 🖥️ **1080p Full HD & Display Mode Switcher**:
-  - Runs natively at **1920x1080 Full HD** resolution.
-  - Interactive **Fullscreen & Windowed mode switcher** directly from the Main Menu and Pause Menu.
-  - **`F11`** or **`Alt + Enter`** global shortcut to toggle display mode at any time.
-  - Automatic persistent display settings (`settings.dat`).
+- 📱 **Multi-Touch & Touchscreen Controls**:
+  - Drag finger left/right anywhere on screen for smooth paddle positioning.
+  - Tap screen to launch ball in **SERVE** mode or fire **LASER** blasters.
+  - Interactive **HUD Touch Pause button (`⏸️`)** at top-right of screen.
+  - Touch drag-scrolling for the Stage Selection list.
+- 📦 **Automated Android Packaging & APK Build Pipeline**:
+  - 1-Click build script (`build.bat` / `build.ps1`) generating `dist/BreakoutArcade.love` and syncing `android/app/src/main/assets/game.love`.
+  - Full Gradle project setup in `android/` to build standalone `.apk` installers via Android Studio or `./gradlew assembleDebug`.
 - 🎼 **Procedural Soothing Background Music**:
-  - Lush, relaxing ambient chord progression (**Cmaj7 → Am9 → Fmaj7 → G6**) synthesized at runtime with warm detuned pads, sub-bass, and shimmering arpeggios.
+  - Lush, relaxing ambient chord progression (**Cmaj7 → Am9 → Fmaj7 → G6**) synthesized on-the-fly.
   - Zero external `.mp3` or `.wav` music files required.
-  - Press **`M`** at any time to mute or unmute music.
-- 🎨 **Glassmorphic Arcade Visuals**: Dark space starfield backdrop, glowing card modals, dynamic screen shake, hit squish/stretch animations, vignette/scanline shaders, and floating score popups.
-- 🎵 **Procedural Sound Effects Synthesizer**: Synthesizes all audio wave samples (bounce, brick shatter, steel chime, explosion, laser zap, power-up chime, fanfare) on-the-fly.
-- 📦 **1-Click Standalone Windows Executable Compiler**:
-  - Automated PowerShell (`build.ps1`) and Batch (`build.bat`) build scripts.
-  - Generates standalone `BreakoutArcade.exe` and release `BreakoutArcade-Windows.zip` ready for distribution.
-- 🧱 **5 Unique Brick Types**:
-  - **Normal Bricks**: 1-hit colorful tier bricks.
-  - **Tough Bricks**: 2–3 hits with procedural visual crack overlays.
-  - **Unbreakable Steel Bricks**: Indestructible until clearable bricks are destroyed (+500 score bonus).
-  - **Explosive TNT Bricks**: Triggers radial chain reactions destroying nearby bricks.
-  - **Powerup Bricks**: Guaranteed power-up drop when broken.
-- ⚡ **7 Power-Up Abilities**:
-  - 🟢 **Multiball (3x)**: Spawns 2 extra active balls in play.
-  - 🟦 **Expanded Paddle**: Widens paddle width by +50%.
-  - 🟥 **Laser Cannons**: Mounts dual laser blasters to paddle (shoot with Spacebar / Click).
-  - ⚡ **Fireball**: Meteor ball that pierces through bricks without bouncing back.
-  - 🛡️ **Safety Net**: Glowing bottom shield that saves lost balls once.
-  - ❤️ **Extra Life**: Restores 1 life heart.
-  - 💰 **2x Score Multiplier**: Doubles points scored for 15 seconds.
-- 🗺️ **10 Handcrafted Arcade Level Maps**:
-  1. *Rainbow Arcade* (Classic warm-up rainbow tiers)
-  2. *Crystal Pyramid* (TNT core pyramid with Steel anchors)
-  3. *Retro Invader* (Pixel alien sprite with Steel eyes)
-  4. *Diamond Fortress* (Concentric Steel ring fortress)
-  5. *Neon Castle* (Twin battlements with Powerup vaults)
-  6. *Solar Flare* (Circular solar core with TNT flares)
-  7. *Star Destroyer* (Sleek starship wedge with Laser powerups)
-  8. *Double Helix* (Intertwined DNA strands of Tough bricks)
-  9. *Infinity Matrix* (Figure-8 loop with Gold & 2x Multipliers)
-  10. *Chaos Gauntlet* (Dense Steel barriers & explosive TNT clusters)
-- 🕹️ **Dual Controls & Responsive Canvas**: Supports keyboard (Arrow keys / A-D / Space) and mouse controls with automatic letterbox viewport scaling.
-- 🏆 **Persistence & Combo Chains**: Automatic high score saving (`highscore.dat`), display settings saving (`settings.dat`), and combo multiplier chain system.
+- 🎨 **Glassmorphic Visuals**: Dark space starfield backdrop, glowing card modals, dynamic screen shake, hit squish/stretch animations, vignette/scanline shaders, and floating score popups.
+- 🎵 **Procedural Sound Effects Synthesizer**: Synthesizes all audio wave samples (bounce, brick shatter, steel chime, explosion, laser zap, power-up chime, fanfare) at runtime.
+- 🧱 **5 Unique Brick Types**: Normal, 3-hit Tough, Indestructible Steel (+500 clear bonus), Explosive TNT chain reactions, and Powerup Bricks.
+- ⚡ **7 Power-Up Abilities**: Multiball (3x), Expanded Paddle, Laser Cannons, Fireball Meteor, Safety Net, Extra Life, and 2x Score Multiplier.
+- 🗺️ **10 Handcrafted Level Maps**: Handcrafted arcade stages from *Rainbow Arcade* to *Chaos Gauntlet*.
 
 ---
 
 ## 📁 Project Structure
 
 ```
-breakout/
-├── conf.lua           # Love2D window configuration (1920x1080 1080p, touch enabled)
-├── main.lua           # Main game loop, state manager, keyboard, touch & rendering
-├── build.ps1          # Automated PowerShell 1-click Windows .exe compiler
-├── build.bat          # Windows File Explorer 1-click build launcher
-├── build_android.ps1  # Automated PowerShell 1-click Android .love & APK bundle builder
-├── build_android.bat  # Android 1-click build launcher
-├── ANDROID_GUIDE.md   # Android installation & compilation guide
-├── android/           # Standalone Android Gradle APK wrapper project
-├── dist/              # Output directory for Windows .exe, .love, and release zips
-├── run.ps1            # Windows 1-click PowerShell launcher script
-├── run.bat            # Windows 1-click Batch launcher script
+breakout-arcade-android/
+├── conf.lua           # Love2D window configuration (1920x1080 canvas, touch enabled)
+├── main.lua           # Main game loop, state manager, touch input & rendering
+├── build.ps1          # Automated PowerShell 1-click Android .love & APK asset builder
+├── build.bat          # 1-click Batch launcher for Android build script
+├── ANDROID_GUIDE.md   # Android deployment & installation guide
+├── android/           # Standalone Android Gradle APK project setup
+├── dist/              # Output directory for BreakoutArcade.love and release zips
 ├── README.md          # Project documentation
 └── src/
-    ├── constants.lua  # Color palette, virtual resolution & physics parameters
+    ├── constants.lua  # Touch HUD pause bounds, colors & virtual resolution
     ├── sounds.lua     # Procedural sound & soothing background music synthesizer
     ├── visuals.lua    # Starfields, playfield grids, scanlines & glass visual effects
     ├── particle.lua   # Particle explosion engine, screen shake & floating score text
@@ -86,65 +58,32 @@ breakout/
 
 ---
 
-## 🚀 How to Run & Build (.exe & Android)
+## 🚀 How to Run & Build for Android
 
-### 1. Windows Standalone Executable (.exe)
-You can launch the compiled game directly by running:
-- **Executable**: `dist/BreakoutArcade/BreakoutArcade.exe`
-- **ZIP Release**: `dist/BreakoutArcade-Windows.zip` (shareable standalone zip)
+### Method 1: Instant Play via LÖVE for Android App (No Compilation)
+1. Install **LÖVE for Android** from the [Google Play Store](https://play.google.com/store/apps/details?id=org.love2d.android) or GitHub.
+2. Run `build.bat` or `.\build.ps1` to compile `dist/BreakoutArcade.love`.
+3. Transfer `BreakoutArcade.love` to your Android device and tap to open it in **LÖVE**.
 
-To rebuild:
-```powershell
-.\build.ps1
-```
-or double-click `build.bat`.
+### Method 2: Standalone APK Packaging (.apk)
+1. Run `build.bat` (this syncs `android/app/src/main/assets/game.love`).
+2. Open the `android/` directory in **Android Studio**.
+3. Build & Install: `./gradlew assembleDebug` or click **Run** in Android Studio to install `app-debug.apk` directly on your device.
 
-### 2. Android Package (.love & .apk)
-To build for Android phones/tablets:
-```cmd
-build_android.bat
-```
-or run in PowerShell:
-```powershell
-.\build_android.ps1
-```
-This generates:
-- `dist/BreakoutArcade.love` (Open directly in **LÖVE for Android** app on Play Store)
-- `dist/BreakoutArcade-Android.zip`
-- Assets synced to `android/app/src/main/assets/game.love` for compiling a standalone `.apk` with Android Studio / Gradle.
-
-See [ANDROID_GUIDE.md](file:///x:/breakout%20-%20Copy/ANDROID_GUIDE.md) for full installation & touch control instructions!
-
-### 3. Windows Development Mode Launchers
-Run either script in your terminal or double-click in File Explorer:
-```powershell
-.\run.ps1
-```
-or
-```cmd
-.\run.bat
-```
-
-### 4. Standard LÖVE 2D CLI
-If you have [LÖVE](https://love2d.org/) installed globally:
-```bash
-love .
-```
+See [ANDROID_GUIDE.md](file:///x:/breakout%20-%20Copy/ANDROID_GUIDE.md) for full instructions!
 
 ---
 
-## 🎮 Controls
+## 🎮 Touchscreen Controls Guide
 
-| Action | Keyboard | Mouse | Touchscreen (Android) |
-| :--- | :--- | :--- | :--- |
-| **Move Paddle** | Left / Right Arrows or `A` / `D` | Move Cursor | Drag finger left / right |
-| **Launch Ball / Fire Lasers** | `Spacebar` or `Enter` | Left Click | Tap screen |
-| **Pause Game** | `P` or `Escape` | — | Tap **`⏸️` HUD Pause Button** |
-| **Toggle Soothing Music** | `M` | Mute / Unmute Music | — |
-| **Toggle Fullscreen / Window** | `F11` or `Alt + Enter` | Click Display Button in Menu | — |
-| **Menu Navigation / Scroll** | Up / Down Arrows or `W` / `S` | Move Cursor / Scroll Wheel | Drag finger up/down (Stage list) |
-| **Confirm Menu Choice** | `Enter` or `Spacebar` | Left Click | Tap menu option button |
-| **Quit Game** | `Escape` in menus or select `Quit` | Click Quit Button | Tap Quit Button |
+| Action | Touchscreen Gesture |
+| :--- | :--- |
+| **Move Paddle** | Drag finger left / right anywhere on screen |
+| **Launch Ball / Fire Lasers** | Tap anywhere on screen |
+| **Pause Game** | Tap **`⏸️` HUD Pause Button** at top-right |
+| **Scroll Stage List** | Drag finger up / down in Stage Select list |
+| **Select Menu Choice** | Tap directly on any menu button |
+| **Quit Game** | Tap **Quit Game** button in menu |
 
 ---
 

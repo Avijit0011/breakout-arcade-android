@@ -6,33 +6,13 @@ local UI = {}
 local fonts = {}
 local titlePulse = 0
 
-local function trySystemFont(names, size)
-    if love.system and love.system.getOS() == "Windows" then
-        for _, name in ipairs(names) do
-            local path = "C:/Windows/Fonts/" .. name
-            local file = io.open(path, "rb")
-            if file then
-                local data = file:read("*all")
-                file:close()
-                local ok, font = pcall(function()
-                    return love.graphics.newFont(love.filesystem.newFileData(data, name), size)
-                end)
-                if ok and font then
-                    return font
-                end
-            end
-        end
-    end
-    return love.graphics.newFont(size)
-end
-
 function UI.init()
-    fonts.small  = trySystemFont({"segoeui.ttf", "SegoeUI.ttf"}, 15)
-    fonts.medium = trySystemFont({"segoeui.ttf", "SegoeUI.ttf"}, 20)
-    fonts.large  = trySystemFont({"bahnschrift.ttf", "segoeui.ttf"}, 34)
-    fonts.title  = trySystemFont({"bahnschrift.ttf", "seguisb.ttf", "segoeui.ttf"}, 58)
-    fonts.badge  = trySystemFont({"consola.ttf", "segoeui.ttf"}, 13)
-    fonts.score  = trySystemFont({"consola.ttf", "bahnschrift.ttf", "segoeui.ttf"}, 20)
+    fonts.small  = love.graphics.newFont(15)
+    fonts.medium = love.graphics.newFont(20)
+    fonts.large  = love.graphics.newFont(34)
+    fonts.title  = love.graphics.newFont(58)
+    fonts.badge  = love.graphics.newFont(13)
+    fonts.score  = love.graphics.newFont(20)
 end
 
 function UI.update(dt)
