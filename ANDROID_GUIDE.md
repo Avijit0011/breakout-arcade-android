@@ -9,7 +9,7 @@ Play **Breakout Arcade** on any Android smartphone or tablet with full touchscre
 ### Option 1: Instant Play via LÖVE for Android App (Recommended - No Compilation Needed)
 
 1. **Install LÖVE for Android**:
-   - Download **LÖVE** from the [Google Play Store](https://play.google.com/store/apps/details?id=org.love2d.android) or directly from the [Love2D GitHub Releases](https://github.com/love2d/love-android/releases).
+   - Download the **LÖVE for Android** app directly from [Love2D GitHub Releases](https://github.com/love2d/love-android/releases).
 2. **Build or Download `BreakoutArcade.love`**:
    - Run `build_android.bat` or `.\build_android.ps1` on your PC.
    - The compiled package is located at `dist/BreakoutArcade.love` (and inside `dist/BreakoutArcade-Android.zip`).

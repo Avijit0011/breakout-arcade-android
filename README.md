@@ -61,7 +61,7 @@ breakout-arcade-android/
 ## 🚀 How to Run & Build for Android
 
 ### Method 1: Instant Play via LÖVE for Android App (No Compilation)
-1. Install **LÖVE for Android** from the [Google Play Store](https://play.google.com/store/apps/details?id=org.love2d.android) or GitHub.
+1. Install **LÖVE for Android** from [Love2D GitHub Releases](https://github.com/love2d/love-android/releases).
 2. Run `build.bat` or `.\build.ps1` to compile `dist/BreakoutArcade.love`.
 3. Transfer `BreakoutArcade.love` to your Android device and tap to open it in **LÖVE**.
 
