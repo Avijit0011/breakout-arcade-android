@@ -7,17 +7,19 @@ local fonts = {}
 local titlePulse = 0
 
 local function trySystemFont(names, size)
-    for _, name in ipairs(names) do
-        local path = "C:/Windows/Fonts/" .. name
-        local file = io.open(path, "rb")
-        if file then
-            local data = file:read("*all")
-            file:close()
-            local ok, font = pcall(function()
-                return love.graphics.newFont(love.filesystem.newFileData(data, name), size)
-            end)
-            if ok and font then
-                return font
+    if love.system and love.system.getOS() == "Windows" then
+        for _, name in ipairs(names) do
+            local path = "C:/Windows/Fonts/" .. name
+            local file = io.open(path, "rb")
+            if file then
+                local data = file:read("*all")
+                file:close()
+                local ok, font = pcall(function()
+                    return love.graphics.newFont(love.filesystem.newFileData(data, name), size)
+                end)
+                if ok and font then
+                    return font
+                end
             end
         end
     end
@@ -155,7 +157,7 @@ function UI.drawHUD(score, highScore, lives, levelName, combo, multiplier, safet
     end
 
     -- Pulsing Animated Heart Containers for Lives
-    local heartX = Constants.VIRTUAL_WIDTH - 150
+    local heartX = Constants.VIRTUAL_WIDTH - 210
     local heartScale = 1 + math.sin(titlePulse * 2.5) * 0.08
     for i = 1, lives do
         local hx = heartX + (i - 1) * 32
@@ -178,6 +180,15 @@ function UI.drawHUD(score, highScore, lives, levelName, combo, multiplier, safet
 
         love.graphics.pop()
     end
+
+    -- Interactive Touch Pause Button (Top Right)
+    local px, py = Constants.PAUSE_BTN_X, Constants.PAUSE_BTN_Y
+    local pw, ph = Constants.PAUSE_BTN_WIDTH, Constants.PAUSE_BTN_HEIGHT
+    Visuals.pill(px, py, pw, ph, {0.10, 0.14, 0.28, 0.85}, {0.25, 0.88, 1.00, 0.70})
+    love.graphics.setColor(Constants.COLORS.ACCENT_CYAN)
+    love.graphics.rectangle("fill", px + 17, py + 11, 5, 16, 2, 2)
+    love.graphics.rectangle("fill", px + 28, py + 11, 5, 16, 2, 2)
+
 
     -- Active Powerup Badges HUD (Bottom Left)
     if activePowerups then

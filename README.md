@@ -59,10 +59,15 @@ A feature-rich, arcade-quality **Breakout** game built from scratch using the **
 
 ```
 breakout/
-├── conf.lua           # Love2D window configuration (1920x1080 1080p, resizable)
-├── main.lua           # Main game loop, state manager, keyboard & rendering
-├── build.ps1          # Automated PowerShell 1-click .exe compiler script
+├── conf.lua           # Love2D window configuration (1920x1080 1080p, touch enabled)
+├── main.lua           # Main game loop, state manager, keyboard, touch & rendering
+├── build.ps1          # Automated PowerShell 1-click Windows .exe compiler
 ├── build.bat          # Windows File Explorer 1-click build launcher
+├── build_android.ps1  # Automated PowerShell 1-click Android .love & APK bundle builder
+├── build_android.bat  # Android 1-click build launcher
+├── ANDROID_GUIDE.md   # Android installation & compilation guide
+├── android/           # Standalone Android Gradle APK wrapper project
+├── dist/              # Output directory for Windows .exe, .love, and release zips
 ├── run.ps1            # Windows 1-click PowerShell launcher script
 ├── run.bat            # Windows 1-click Batch launcher script
 ├── README.md          # Project documentation
@@ -81,21 +86,36 @@ breakout/
 
 ---
 
-## 🚀 How to Run & Build `.exe`
+## 🚀 How to Run & Build (.exe & Android)
 
-### 1. Standalone Executable (.exe)
+### 1. Windows Standalone Executable (.exe)
 You can launch the compiled game directly by running:
 - **Executable**: `dist/BreakoutArcade/BreakoutArcade.exe`
 - **ZIP Release**: `dist/BreakoutArcade-Windows.zip` (shareable standalone zip)
 
-### 2. Rebuilding the `.exe`
-If you make modifications to the source code and want to rebuild the `.exe` package, run:
+To rebuild:
 ```powershell
 .\build.ps1
 ```
-or double-click `build.bat` in File Explorer.
+or double-click `build.bat`.
 
-### 3. Windows 1-Click Launchers (Development Mode)
+### 2. Android Package (.love & .apk)
+To build for Android phones/tablets:
+```cmd
+build_android.bat
+```
+or run in PowerShell:
+```powershell
+.\build_android.ps1
+```
+This generates:
+- `dist/BreakoutArcade.love` (Open directly in **LÖVE for Android** app on Play Store)
+- `dist/BreakoutArcade-Android.zip`
+- Assets synced to `android/app/src/main/assets/game.love` for compiling a standalone `.apk` with Android Studio / Gradle.
+
+See [ANDROID_GUIDE.md](file:///x:/breakout%20-%20Copy/ANDROID_GUIDE.md) for full installation & touch control instructions!
+
+### 3. Windows Development Mode Launchers
 Run either script in your terminal or double-click in File Explorer:
 ```powershell
 .\run.ps1
@@ -115,16 +135,16 @@ love .
 
 ## 🎮 Controls
 
-| Action | Keyboard | Mouse |
-| :--- | :--- | :--- |
-| **Move Paddle** | Left / Right Arrows or `A` / `D` | Move Cursor |
-| **Launch Ball / Fire Lasers** | `Spacebar` or `Enter` | Left Click |
-| **Pause Game** | `P` or `Escape` | — |
-| **Toggle Soothing Music** | `M` | Mute / Unmute Music |
-| **Toggle Fullscreen / Window** | `F11` or `Alt + Enter` | Click Display Button in Menu |
-| **Menu Navigation** | Up / Down Arrows or `W` / `S` | Move Cursor |
-| **Confirm Menu Choice** | `Enter` or `Spacebar` | Left Click |
-| **Quit Game** | `Escape` in menus or select `Quit` | Click Quit Button |
+| Action | Keyboard | Mouse | Touchscreen (Android) |
+| :--- | :--- | :--- | :--- |
+| **Move Paddle** | Left / Right Arrows or `A` / `D` | Move Cursor | Drag finger left / right |
+| **Launch Ball / Fire Lasers** | `Spacebar` or `Enter` | Left Click | Tap screen |
+| **Pause Game** | `P` or `Escape` | — | Tap **`⏸️` HUD Pause Button** |
+| **Toggle Soothing Music** | `M` | Mute / Unmute Music | — |
+| **Toggle Fullscreen / Window** | `F11` or `Alt + Enter` | Click Display Button in Menu | — |
+| **Menu Navigation / Scroll** | Up / Down Arrows or `W` / `S` | Move Cursor / Scroll Wheel | Drag finger up/down (Stage list) |
+| **Confirm Menu Choice** | `Enter` or `Spacebar` | Left Click | Tap menu option button |
+| **Quit Game** | `Escape` in menus or select `Quit` | Click Quit Button | Tap Quit Button |
 
 ---
 

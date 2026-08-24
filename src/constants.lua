@@ -83,4 +83,15 @@ Constants.POWERUP_TYPES = {
     "MULTIPLIER"
 }
 
+-- Touch HUD Pause Button Constants
+Constants.PAUSE_BTN_X = 1200
+Constants.PAUSE_BTN_Y = 12
+Constants.PAUSE_BTN_WIDTH = 50
+Constants.PAUSE_BTN_HEIGHT = 38
+
+function Constants.isAndroid()
+    return love.system and love.system.getOS() == "Android"
+end
+
 return Constants
+

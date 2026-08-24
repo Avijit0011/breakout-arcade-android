@@ -123,11 +123,17 @@ local function loadSettings()
 end
 
 local function getStartMenuOptions()
+    if Constants.isAndroid() then
+        return {"START GAME", "SELECT STAGE", "QUIT GAME"}
+    end
     local modeTxt = isFullscreen and "DISPLAY: FULLSCREEN" or "DISPLAY: WINDOWED (1080p)"
     return {"START GAME", "SELECT STAGE", modeTxt, "QUIT GAME"}
 end
 
 local function getPauseMenuOptions()
+    if Constants.isAndroid() then
+        return {"RESUME GAME", "MAIN MENU", "QUIT GAME"}
+    end
     local modeTxt = isFullscreen and "DISPLAY: FULLSCREEN" or "DISPLAY: WINDOWED (1080p)"
     return {"RESUME GAME", modeTxt, "MAIN MENU", "QUIT GAME"}
 end
@@ -151,13 +157,25 @@ local function saveHighScore()
     end
 end
 
--- Convert screen mouse coordinates to virtual resolution coordinates
-local function getVirtualMouse()
-    local mx, my = love.mouse.getPosition()
-    local vx = (mx - offsetX) / scaleX
-    local vy = (my - offsetY) / scaleY
+-- Convert screen coordinates to virtual resolution coordinates (touch & mouse)
+local function getVirtualPos(x, y)
+    if not x or not y then return nil, nil end
+    local vx = (x - offsetX) / scaleX
+    local vy = (y - offsetY) / scaleY
     return vx, vy
 end
+
+local function getVirtualMouse()
+    local mx, my = love.mouse.getPosition()
+    return getVirtualPos(mx, my)
+end
+
+local function isTouchOnPauseBtn(vx, vy)
+    if not vx or not vy then return false end
+    return vx >= Constants.PAUSE_BTN_X and vx <= (Constants.PAUSE_BTN_X + Constants.PAUSE_BTN_WIDTH) and
+           vy >= Constants.PAUSE_BTN_Y and vy <= (Constants.PAUSE_BTN_Y + Constants.PAUSE_BTN_HEIGHT)
+end
+
 
 -- Check mouse hover over menu option buttons
 local function getHoveredMenuIndex(startY, optionsCount, buttonHeight, spacing, customWidth)
@@ -345,52 +363,57 @@ local function confirmMenuSelection()
     Sounds.play("paddle_hit")
 
     if gameState == "start" then
-        if menuIndex == 1 then
-            score = 0
-            lives = 3
-            isNewHighScore = false
-            loadLevel(1)
-        elseif menuIndex == 2 then
-            menuIndex = 1
-            levelScrollY = 0
-            scrollTargetY = 0
-            gameState = "levelselect"
-        elseif menuIndex == 3 then
-            toggleDisplayMode()
-        elseif menuIndex == 4 then
-            love.event.quit()
+        if Constants.isAndroid() then
+            if menuIndex == 1 then
+                score = 0; lives = 3; isNewHighScore = false; loadLevel(1)
+            elseif menuIndex == 2 then
+                menuIndex = 1; levelScrollY = 0; scrollTargetY = 0; gameState = "levelselect"
+            elseif menuIndex == 3 then
+                love.event.quit()
+            end
+        else
+            if menuIndex == 1 then
+                score = 0; lives = 3; isNewHighScore = false; loadLevel(1)
+            elseif menuIndex == 2 then
+                menuIndex = 1; levelScrollY = 0; scrollTargetY = 0; gameState = "levelselect"
+            elseif menuIndex == 3 then
+                toggleDisplayMode()
+            elseif menuIndex == 4 then
+                love.event.quit()
+            end
         end
     elseif gameState == "levelselect" then
         local lvlCount = Levels.getMapCount()
         if menuIndex >= 1 and menuIndex <= lvlCount then
-            score = 0
-            lives = 3
-            isNewHighScore = false
-            loadLevel(menuIndex)
+            score = 0; lives = 3; isNewHighScore = false; loadLevel(menuIndex)
         else
-            menuIndex = 1
-            gameState = "start"
+            menuIndex = 1; gameState = "start"
         end
     elseif gameState == "paused" then
-        if menuIndex == 1 then
-            gameState = "play"
-        elseif menuIndex == 2 then
-            toggleDisplayMode()
-        elseif menuIndex == 3 then
-            menuIndex = 1
-            gameState = "start"
-        elseif menuIndex == 4 then
-            love.event.quit()
+        if Constants.isAndroid() then
+            if menuIndex == 1 then
+                gameState = "play"
+            elseif menuIndex == 2 then
+                menuIndex = 1; gameState = "start"
+            elseif menuIndex == 3 then
+                love.event.quit()
+            end
+        else
+            if menuIndex == 1 then
+                gameState = "play"
+            elseif menuIndex == 2 then
+                toggleDisplayMode()
+            elseif menuIndex == 3 then
+                menuIndex = 1; gameState = "start"
+            elseif menuIndex == 4 then
+                love.event.quit()
+            end
         end
     elseif gameState == "gameover" then
         if menuIndex == 1 then
-            score = 0
-            lives = 3
-            isNewHighScore = false
-            loadLevel(1)
+            score = 0; lives = 3; isNewHighScore = false; loadLevel(1)
         elseif menuIndex == 2 then
-            menuIndex = 1
-            gameState = "start"
+            menuIndex = 1; gameState = "start"
         elseif menuIndex == 3 then
             love.event.quit()
         end
@@ -398,13 +421,13 @@ local function confirmMenuSelection()
         if menuIndex == 1 then
             loadLevel(currentLevel + 1)
         elseif menuIndex == 2 then
-            menuIndex = 1
-            gameState = "start"
+            menuIndex = 1; gameState = "start"
         elseif menuIndex == 3 then
             love.event.quit()
         end
     end
 end
+
 
 -- Main Update Loop
 function love.update(dt)
@@ -453,7 +476,17 @@ function love.update(dt)
         return
     end
 
-    local vx, vy = getVirtualMouse()
+    local vx, vy
+    if love.touch and love.touch.getTouches then
+        local touches = love.touch.getTouches()
+        if #touches > 0 then
+            local tx, ty = love.touch.getPosition(touches[1])
+            vx, vy = getVirtualPos(tx, ty)
+        end
+    end
+    if not vx then
+        vx, vy = getVirtualMouse()
+    end
 
     -- Update Multiplier Timer
     if multiplierTimer > 0 then
@@ -625,9 +658,46 @@ function love.keypressed(key)
     end
 end
 
--- Mouse Press Input Callback
+local lastTouchY = nil
+
+-- Touch Press Input Callback
+function love.touchpressed(id, x, y, dx, dy, pressure)
+    local vx, vy = getVirtualPos(x, y)
+    if not vx or not vy then return end
+
+    if gameState == "levelselect" then
+        lastTouchY = vy
+    end
+end
+
+-- Touch Move Drag Callback (Smooth stage select scrolling)
+function love.touchmoved(id, x, y, dx, dy, pressure)
+    local vx, vy = getVirtualPos(x, y)
+    if not vx or not vy then return end
+
+    if gameState == "levelselect" and lastTouchY then
+        local deltaY = lastTouchY - vy
+        local opts = getLevelSelectOptions()
+        local totalH = #opts * 56
+        local viewH = 370
+        local maxScroll = math.max(0, totalH - viewH)
+        scrollTargetY = math.max(0, math.min(maxScroll, scrollTargetY + deltaY * 1.5))
+        lastTouchY = vy
+    end
+end
+
+-- Mouse & Touch Press Input Callback
 function love.mousepressed(x, y, button)
     if button == 1 then
+        local vx, vy = getVirtualPos(x, y)
+
+        if (gameState == "play" or gameState == "serve") and isTouchOnPauseBtn(vx, vy) then
+            menuIndex = 1
+            gameState = "paused"
+            Sounds.play("wall_hit")
+            return
+        end
+
         if gameState == "start" or gameState == "levelselect" or gameState == "paused" or gameState == "gameover" or gameState == "victory" then
             confirmMenuSelection()
         elseif gameState == "serve" then
@@ -642,6 +712,7 @@ function love.mousepressed(x, y, button)
         end
     end
 end
+
 
 -- Main Draw Loop
 function love.draw()
